@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emissions Data Portal</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px; background-color: #f6f8fa; color: #24292f; }
+        h1 { border-bottom: 2px solid #d0d7de; padding-bottom: 10px; color: #0969da; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #d0d7de; }
+        th { background-color: #f6f8fa; }
+        .badge { background: #dafbe1; color: #1a7f37; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Global Emissions Database</h1>
+        <p>Summarized public portal displaying verified academic emissions metrics.</p>
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>Study Title</th>
+                    <th>Authors</th>
+                    <th>Year</th>
+                    <th>Region</th>
+                    <th>Device/Fuel</th>
+                    <th>PM<sub>2.5</sub> EF</th>
+                    <th>BC EF</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic data will load here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Adjust these to point directly to your repository's public data path
+        const repoOwner = window.location.hostname.split('.')[0];
+        const repoName = "Emissions";
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data`;
+
+        async function loadData() {
+            try {
+                const response = await fetch(apiUrl);
+                const files = await response.json();
+                const tbody = document.querySelector("#data-table tbody");
+
+                for (let file of files) {
+                    if (file.name.endsWith('.json')) {
+                        const fileRes = await fetch(file.download_url);
+                        const data = await fileRes.json();
+                        
+                        const row = `<tr>
+                            <td><strong>${data.study_title || 'N/A'}</strong><br><small>DOI: ${data.doi || 'N/A'}</small></td>
+                            <td>${data.authors || 'N/A'}</td>
+                            <td><span class="badge">${data.year_publication || 'N/A'}</span></td>
+                            <td>${data.region_country || 'N/A'} (${data.field_or_lab || ''})</td>
+                            <td>${data.device || 'N/A'} / ${data.fuel || 'N/A'}</td>
+                            <td>${data.ef_pm25 || '-'}</td>
+                            <td>${data.ef_bc || '-'}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading database files:", err);
+            }
+        }
+        loadData();
+    </script>
+</body>
+</html>
