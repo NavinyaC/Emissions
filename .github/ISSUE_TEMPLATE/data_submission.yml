@@ -1,0 +1,42 @@
+name: "🚀 New Emissions Data Submission"
+description: "Researchers: Please use this template to submit your summarized data."
+title: "[Data Submission]: "
+labels: ["pending-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thank you for contributing your data! 
+        Please complete the fields below. Once approved by the administrator, this data will be automatically summarized on the public portal.
+
+  - type: input
+    id: researcher_name
+    attributes:
+      label: "Researcher Name"
+      placeholder: "e.g., Dr. Jane Doe"
+    validations:
+      required: true
+
+  - type: input
+    id: institution
+    attributes:
+      label: "Affiliation / Institution"
+      placeholder: "e.g., IIT Jodhpur"
+    validations:
+      required: true
+
+  - type: textarea
+    id: data_summary
+    attributes:
+      label: "Data Summary & Key Findings"
+      placeholder: "Provide a brief summary of the emissions data, methodologies used, or main takeaways..."
+    validations:
+      required: true
+
+  - type: input
+    id: carbon_metrics
+    attributes:
+      label: "Key Metrics (e.g., Mass Absorption Cross-Section, Absorption Enhancement)"
+      placeholder: "e.g., MAC = 3.2 m²/g, E_abs = 1.5"
+    validations:
+      required: false
