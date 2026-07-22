@@ -1,0 +1,29 @@
+name: Process Approved Emission Data
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  build:
+    if: github.event.label.name == 'approved'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Parse Issue Form Data
+        uses: stefanbuck/github-issue-parser@v3
+        id: issue-parser
+        with:
+          template-path: .github/ISSUE_TEMPLATE/data_submission.yml
+
+      - name: Save Data to JSON File
+        run: |
+          echo '${{ steps.issue-parser.outputs.jsonString }}' > data/emission_entry_${{ github.event.issue.number }}.json
+
+      - name: Commit and Push to Database
+        uses: stafhq/gitactions-commit-and-push@v1.2.2
+        with:
+          commit-message: "Database update: Added approved study entry #${{ github.event.issue.number }}"
