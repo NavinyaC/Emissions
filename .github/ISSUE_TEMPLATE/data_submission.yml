@@ -1,42 +1,188 @@
 name: "🚀 New Emissions Data Submission"
-description: "Researchers: Please use this template to submit your summarized data."
+description: "Researchers: Please use this template to submit your study's emissions data metrics."
 title: "[Data Submission]: "
 labels: ["pending-review"]
 body:
   - type: markdown
     attributes:
       value: |
-        ### Thank you for contributing your data! 
-        Please complete the fields below. Once approved by the administrator, this data will be automatically summarized on the public portal.
+        ### Study Information & Metadata
+        Please provide the foundational citation details for this dataset.
 
   - type: input
-    id: researcher_name
+    id: study_title
     attributes:
-      label: "Researcher Name"
-      placeholder: "e.g., Dr. Jane Doe"
+      label: "Study Title"
+      placeholder: "e.g., Aerosol Emission Factors from Biomass Burning"
     validations:
       required: true
 
   - type: input
-    id: institution
+    id: year_publication
     attributes:
-      label: "Affiliation / Institution"
-      placeholder: "e.g., IIT Jodhpur"
+      label: "Year of Publication"
+      placeholder: "e.g., 2026"
     validations:
       required: true
 
   - type: textarea
-    id: data_summary
+    id: authors
     attributes:
-      label: "Data Summary & Key Findings"
-      placeholder: "Provide a brief summary of the emissions data, methodologies used, or main takeaways..."
+      label: "Name of Authors"
+      placeholder: "List all authors separated by commas"
     validations:
       required: true
 
   - type: input
-    id: carbon_metrics
+    id: corresponding_author
     attributes:
-      label: "Key Metrics (e.g., Mass Absorption Cross-Section, Absorption Enhancement)"
-      placeholder: "e.g., MAC = 3.2 m²/g, E_abs = 1.5"
+      label: "Name of Corresponding Author"
+    validations:
+      required: true
+
+  - type: input
+    id: doi
+    attributes:
+      label: "DOI (Digital Object Identifier)"
+      placeholder: "e.g., 10.1016/j.atmosenv..."
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### Experimental Parameters
+        Tell us about the environment, fuel type, and system setups.
+
+  - type: input
+    id: device
+    attributes:
+      label: "Device"
+      placeholder: "e.g., Improved Cookstove Model X, Residential Boiler"
+    validations:
+      required: true
+
+  - type: input
+    id: fuel
+    attributes:
+      label: "Fuel Type"
+      placeholder: "e.g., Fuelwood, Pellets, Agricultural Residue"
+    validations:
+      required: true
+
+  - type: input
+    id: region_country
+    attributes:
+      label: "Region / Country Name"
+      placeholder: "e.g., Jodhpur, India"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: field_or_lab
+    attributes:
+      label: "Field or Lab Study?"
+      options:
+        - "Field"
+        - "Lab"
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### 📊 Emission Factors
+        Please provide the measured values (specify units in your entry if needed, e.g., g/kg).
+
+  - type: input
+    id: ef_pm25
+    attributes:
+      label: "Emission Factor: PM2.5"
+  - type: input
+    id: ef_bc
+    attributes:
+      label: "Emission Factor: BC (Black Carbon)"
+  - type: input
+    id: ef_oc
+    attributes:
+      label: "Emission Factor: OC (Brown/Organic Carbon)"
+  - type: input
+    id: ef_co
+    attributes:
+      label: "Emission Factor: CO"
+  - type: input
+    id: ef_co2
+    attributes:
+      label: "Emission Factor: CO2"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### ⚠️ Uncertainty in Emission Factors
+        Provide the standard deviation or confidence intervals associated with the values above.
+
+  - type: input
+    id: un_pm25
+    attributes:
+      label: "Uncertainty: PM2.5"
+  - type: input
+    id: un_bc
+    attributes:
+      label: "Uncertainty: BC"
+  - type: input
+    id: un_oc
+    attributes:
+      label: "Uncertainty: OC"
+  - type: input
+    id: un_co
+    attributes:
+      label: "Uncertainty: CO"
+  - type: input
+    id: un_co2
+    attributes:
+      label: "Uncertainty: CO2"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### 🧪 Number of Samples (N)
+        Specify the number of test runs or samples analyzed per target metric.
+
+  - type: input
+    id: n_pm25
+    attributes:
+      label: "Number of Samples: PM2.5"
+  - type: input
+    id: n_bc
+    attributes:
+      label: "Number of Samples: BC"
+  - type: input
+    id: n_oc
+    attributes:
+      label: "Number of Samples: OC"
+  - type: input
+    id: n_co
+    attributes:
+      label: "Number of Samples: CO"
+  - type: input
+    id: n_co2
+    attributes:
+      label: "Number of Samples: CO2"
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ### Additional Context
+
+  - type: textarea
+    id: remark
+    attributes:
+      label: "Remark"
+      placeholder: "Any special conditions, unique test parameters, or notes..."
     validations:
       required: false
