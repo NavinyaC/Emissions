@@ -28,7 +28,7 @@
             z-index: 100;
         }
         .nav-container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
@@ -62,7 +62,7 @@
         .page-view.active { display: block; }
 
         .container { 
-            max-width: 1200px; 
+            max-width: 1400px; 
             margin: 30px auto; 
             background: white; 
             padding: 30px; 
@@ -114,14 +114,14 @@
         .search-input { flex: 1; min-width: 250px; }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15); }
         .table-responsive { overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
-        th, td { padding: 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
-        th { background-color: #f6f8fa; font-weight: 600; color: #57606a; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th { background-color: #f6f8fa; font-weight: 600; color: #57606a; white-space: nowrap; }
         tr:hover { background-color: #f8f9fa; }
-        .badge { background: #dafbe1; color: #1a7f37; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge { background: #dafbe1; color: #1a7f37; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
         .badge-lab { background: #ddf4ff; color: #0969da; }
         .badge-field { background: #fff8c5; color: #9a6700; }
-        .sub-value { font-size: 12px; color: #57606a; margin-top: 2px; }
+        .sub-value { font-size: 11px; color: #57606a; margin-top: 2px; }
         .title-link { text-decoration: none; color: var(--primary); }
         .title-link:hover { text-decoration: underline; }
         .loading { padding: 20px; text-align: center; color: #57606a; font-style: italic; }
@@ -164,7 +164,7 @@
             </div>
 
             <div class="controls-bar">
-                <input type="text" id="searchBox" class="search-input" placeholder="🔍 Search by study title, author, fuel, or region...">
+                <input type="text" id="searchBox" class="search-input" placeholder="🔍 Search by study title, author, sector, fuel, or region...">
                 <select id="typeFilter" class="filter-select">
                     <option value="all">All Environments</option>
                     <option value="Lab">Lab Studies</option>
@@ -176,17 +176,18 @@
                 <table id="portalTable">
                     <thead>
                         <tr>
-                            <th style="width: 30%;">Study Metadata</th>
-                            <th>Experimental Configuration</th>
-                            <th>PM<sub>2.5</sub> Emission Factor <br><small>(Uncertainty / N)</small></th>
-                            <th>BC Emission Factor <br><small>(Uncertainty / N)</small></th>
-                            <th>Organic Carbon (OC) <br><small>(Uncertainty / N)</small></th>
-                            <th>Gaseous Carbon (CO / CO<sub>2</sub>)</th>
+                            <th style="width: 22%;">Study Metadata</th>
+                            <th style="width: 18%;">Experimental Configuration</th>
+                            <th>PM<sub>2.5</sub> EF</th>
+                            <th>BC EF</th>
+                            <th>OC EF</th>
+                            <th>CO EF</th>
+                            <th>CO<sub>2</sub> EF</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="6" class="loading">Loading records from core database...</td>
+                            <td colspan="7" class="loading">Loading records from core database...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -233,7 +234,6 @@
                 
                 container.innerHTML = "";
                 teamData.forEach(member => {
-                    // Check if the placeholder string looks like an HTTP web URL link
                     const isUrl = member.photo_placeholder && member.photo_placeholder.startsWith('http');
                     const photoHtml = isUrl 
                         ? `<img src="${member.photo_placeholder}" alt="${member.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`
@@ -250,6 +250,19 @@
             } catch (err) {
                 container.innerHTML = `<div style="color: red; padding: 20px;">Failed to load team data. Ensure data/about/about.json exists.</div>`;
             }
+        }
+
+        // Helper function to format species EF metrics clearly
+        function formatEF(value, uncertainty, nSamples) {
+            if (!value && value !== 0) return '-';
+            let html = `<strong>${value}</strong>`;
+            if (uncertainty || nSamples) {
+                html += `<div class="sub-value">`;
+                if (uncertainty) html += `±${uncertainty}`;
+                if (nSamples) html += ` (N=${nSamples})`;
+                html += `</div>`;
+            }
+            return html;
         }
 
         // Load Emissions Core Table Database Records from data/studies/
@@ -280,24 +293,24 @@
                             
                             row.innerHTML = `
                                 <td>
-                                    ${data.doi ? `<a href="https://doi.org/${data.doi}" target="_blank" class="title-link"><strong style="font-size: 15px;">${data.study_title || 'Untitled Study'}</strong></a>` : `<strong>${data.study_title || 'Untitled Study'}</strong>`}
+                                    ${data.doi ? `<a href="https://doi.org/${data.doi}" target="_blank" class="title-link"><strong style="font-size: 14px;">${data.study_title || 'Untitled Study'}</strong></a>` : `<strong>${data.study_title || 'Untitled Study'}</strong>`}
                                     <br>
                                     <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || 'Unknown'}</small>
                                     <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || 'N/A'}</span>
                                 </td>
                                 <td>
+                                    <strong>Sector:</strong> ${data.sector || 'N/A'}<br>
+                                    <strong>Sub-Sector:</strong> ${data.sub_sector || 'N/A'}<br>
                                     <strong>Fuel:</strong> ${data.fuel || 'N/A'}<br>
                                     <strong>Device:</strong> ${data.device || 'N/A'}<br>
                                     <strong>Region:</strong> ${data.region_country || 'N/A'}<br>
                                     <span class="badge ${data.field_or_lab === 'Lab' ? 'badge-lab' : 'badge-field'}" style="margin-top: 4px; display: inline-block;">${data.field_or_lab || 'N/A'}</span>
                                 </td>
-                                <td>${data.ef_pm25 || '-'}${data.un_pm25 ? `<div class="sub-value">±${data.un_pm25} (N=${data.n_pm25 || '?'})</div>` : ''}</td>
-                                <td>${data.ef_bc || '-'}${data.un_bc ? `<div class="sub-value">±${data.un_bc} (N=${data.n_bc || '?'})</div>` : ''}</td>
-                                <td>${data.ef_oc || '-'}${data.un_oc ? `<div class="sub-value">±${data.un_oc} (N=${data.n_oc || '?'})</div>` : ''}</td>
-                                <td>
-                                    <strong>CO:</strong> ${data.ef_co || '-'}<br>
-                                    <small class="sub-value">CO₂: ${data.ef_co2 || '-'}</small>
-                                </td>
+                                <td>${formatEF(data.ef_pm25, data.un_pm25, data.n_pm25)}</td>
+                                <td>${formatEF(data.ef_bc, data.un_bc, data.n_bc)}</td>
+                                <td>${formatEF(data.ef_oc, data.un_oc, data.n_oc)}</td>
+                                <td>${formatEF(data.ef_co, data.un_co, data.n_co)}</td>
+                                <td>${formatEF(data.ef_co2, data.un_co2, data.n_co2)}</td>
                             `;
                             tbody.appendChild(row);
                         });
@@ -305,11 +318,11 @@
                 }
 
                 if (!hasData) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="loading">No data files found in database subfolder yet.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="loading">No data files found in database subfolder yet.</td></tr>`;
                 }
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="6" class="loading" style="color: red;">Error loading scientific database profiles.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="loading" style="color: red;">Error loading scientific database profiles.</td></tr>`;
             }
         }
 
