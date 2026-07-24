@@ -2,21 +2,21 @@
   {
     "name": "Kushal Tibrewal",
     "role": "Scientist, UN IMEO",
-    "photo_placeholder": "KT"
+    "photo_placeholder": "https://raw.githubusercontent.com/NavinyaC/Emissions/main/docs/images/Kushal.jpg"
   },
   {
     "name": "Taveen Singh Kapoor",
     "role": "Postdoctoral Fellow at Stockholm University, Sweden",
-    "photo_placeholder": "TK"
+    "photo_placeholder": "https://raw.githubusercontent.com/NavinyaC/Emissions/main/docs/images/kapoor.jpg"
   },
   {
     "name": "Sohana Debbarma",
     "role": "CSTEP, Bengaluru",
-    "photo_placeholder": "SD"
+    "photo_placeholder": "https://raw.githubusercontent.com/NavinyaC/Emissions/main/docs/images/Sohana.jpg"
   },
   {
     "name": "Navinya Dilip Chimurkar",
     "role": "Humboldt Postdoctoral Fellow at the University of Rostock, Germany",
-    "photo_placeholder": "NC"
+    "photo_placeholder": "https://raw.githubusercontent.com/NavinyaC/Emissions/main/docs/images/Navinya.jpg"
   }
 ]
