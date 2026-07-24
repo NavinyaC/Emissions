@@ -152,6 +152,7 @@
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .chart-container { position: relative; width: 100%; height: 110px; }
         canvas { width: 100% !important; height: 110px !important; }
+        .chart-placeholder { padding: 40px; text-align: center; color: #57606a; font-style: italic; border: 1px dashed var(--border); border-radius: 6px; background: #fafbfc; }
     </style>
 </head>
 <body>
@@ -250,38 +251,49 @@
                     <h3>Cascade Bench Filters</h3>
                     <div class="filter-group">
                         <label for="sumSector">Sector Selection</label>
-                        <select id="sumSector" class="filter-select" style="width:100%;" onchange="onSectorCascadeChange()"></select>
+                        <select id="sumSector" class="filter-select" style="width:100%;" onchange="onSectorCascadeChange()">
+                            <option value="all">Select a Sector...</option>
+                        </select>
                     </div>
                     <div class="filter-group">
-                        <label for="sumFuel">Fuel Target (Scoped)</label>
-                        <select id="sumFuel" class="filter-select" style="width:100%;" onchange="onFuelCascadeChange()"></select>
+                        <label for="sumFuel">Fuel Target</label>
+                        <select id="sumFuel" class="filter-select" style="width:100%;" onchange="onFuelCascadeChange()">
+                            <option value="all">Select a Fuel...</option>
+                        </select>
                     </div>
                     <div class="filter-group">
-                        <label for="sumDevice">Combustion Device (Scoped)</label>
-                        <select id="sumDevice" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()"></select>
+                        <label for="sumDevice">Combustion Device</label>
+                        <select id="sumDevice" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()">
+                            <option value="all">Select a Device...</option>
+                        </select>
                     </div>
                     <button class="btn-download" onclick="exportSummarySelectionToExcel()">📥 Download Selection (.csv)</button>
                     <div style="font-size:12px; color:#57606a; margin-top:15px; text-align:center;" id="sampleCountDisplay">Entries Matched: 0</div>
                 </div>
 
-                <div class="charts-stack">
-                    <div class="chart-card">
+                <div class="charts-stack" id="chartsStackContainer">
+                    <div class="chart-placeholder" id="initialQueryPlaceholder">
+                        📊 Please select a specific Sector, Fuel, and Device combination in the configuration bench to calculate weighted averages and execute dynamic plot trends.
+                    </div>
+                    
+                    <!-- Hidden Core Structure Cards to render exclusively upon query completion -->
+                    <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header"><strong>PM<sub>2.5</sub> Emission Factor Mean</strong><small class="sub-value" id="label-pm25">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-pm25"></canvas></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header"><strong>Black Carbon (BC) EF Mean</strong><small class="sub-value" id="label-bc">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-bc"></canvas></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header"><strong>Organic Carbon (OC) EF Mean</strong><small class="sub-value" id="label-oc">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-oc"></canvas></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header"><strong>Carbon Monoxide (CO) EF Mean</strong><small class="sub-value" id="label-co">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-co"></canvas></div>
                     </div>
-                    <div class="chart-card">
+                    <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header"><strong>Carbon Dioxide (CO<sub>2</sub>) EF Mean</strong><small class="sub-value" id="label-co2">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-co2"></canvas></div>
                     </div>
@@ -418,6 +430,7 @@
             const sectors = new Set();
             globalCachedStudies.forEach(item => { if (item.sector) sectors.add(item.sector); });
 
+            // Ensure full dynamic sector tracking registry mapping
             const sectorFilter = document.getElementById("sectorFilter");
             sectorFilter.innerHTML = '<option value="all">All Sectors (Dynamic)</option>';
             Array.from(sectors).sort().forEach(s => {
@@ -430,18 +443,18 @@
                 sumSector.innerHTML += `<option value="${s}">${s}</option>`;
             });
 
-            rebuildCascadeFuels();
+            rebuildCascadeFuels(true);
         }
 
-        function onSectorCascadeChange() { rebuildCascadeFuels(); }
-        function onFuelCascadeChange() { rebuildCascadeDevices(); }
+        function onSectorCascadeChange() { rebuildCascadeFuels(false); }
+        function onFuelCascadeChange() { rebuildCascadeDevices(false); }
 
-        function rebuildCascadeFuels() {
+        function rebuildCascadeFuels(isInitialStartup = false) {
             const selectedSector = document.getElementById("sumSector").value;
             const targetFuels = new Set();
 
             globalCachedStudies.forEach(item => {
-                if (selectedSector === "all" || item.sector === selectedSector) {
+                if (isInitialStartup || selectedSector === "all" || item.sector === selectedSector) {
                     if (item.fuel) targetFuels.add(item.fuel);
                 }
             });
@@ -449,19 +462,19 @@
             const sumFuel = document.getElementById("sumFuel");
             sumFuel.innerHTML = '<option value="all">All Fuels (Scoped)</option>';
             Array.from(targetFuels).sort().forEach(f => {
-                sumFuel.innerHTML += `<option value="${f}">${f}</option>`;
+                sumFuel.innerHTML += `<option value="${f}">${f}</option>';
             });
 
-            rebuildCascadeDevices();
+            rebuildCascadeDevices(isInitialStartup);
         }
 
-        function rebuildCascadeDevices() {
+        function rebuildCascadeDevices(isInitialStartup = false) {
             const selectedSector = document.getElementById("sumSector").value;
             const selectedFuel = document.getElementById("sumFuel").value;
             const targetDevices = new Set();
 
             globalCachedStudies.forEach(item => {
-                const matchSector = (selectedSector === "all" || item.sector === selectedSector);
+                const matchSector = (isInitialStartup || selectedSector === "all" || item.sector === selectedSector);
                 const matchFuel = (selectedFuel === "all" || item.fuel === selectedFuel);
                 if (matchSector && matchFuel && item.device) targetDevices.add(item.device);
             });
@@ -469,7 +482,7 @@
             const sumDevice = document.getElementById("sumDevice");
             sumDevice.innerHTML = '<option value="all">All Devices (Scoped)</option>';
             Array.from(targetDevices).sort().forEach(d => {
-                sumDevice.innerHTML += `<option value="${d}">${d}</option>`;
+                sumDevice.innerHTML += `<option value="${d}">${d}</option>';
             });
 
             onSummaryFilterChange();
@@ -491,6 +504,20 @@
             const sector = document.getElementById("sumSector").value;
             const fuel = document.getElementById("sumFuel").value;
             const device = document.getElementById("sumDevice").value;
+
+            // DONT SHOW STACKED BAR PLOTS ON DEFAULT EMPTY QUERIES UNLESS PARAMETERS EXPLICITLY INQUIRED
+            const placeholder = document.getElementById("initialQueryPlaceholder");
+            const graphCards = document.querySelectorAll(".calculation-graph-card");
+
+            if(sector === "all" && fuel === "all" && device === "all") {
+                placeholder.style.display = "block";
+                graphCards.forEach(card => card.style.display = "none");
+                document.getElementById("sampleCountDisplay").textContent = "Entries Matched: 0";
+                return;
+            }
+
+            placeholder.style.display = "none";
+            graphCards.forEach(card => card.style.display = "block");
 
             const targets = globalCachedStudies.filter(item => {
                 return (sector === "all" || item.sector === sector) &&
@@ -532,6 +559,7 @@
 
         function renderSpeciesHorizontalBar(metricId, mean, uncertainty, calculatedMaxScale) {
             const canvas = document.getElementById(`chart-${metricId}`);
+            if(!canvas) return;
             const ctx = canvas.getContext("2d");
             
             const rect = canvas.parentNode.getBoundingClientRect();
@@ -596,16 +624,24 @@
             ctx.fillText(`Max Scale: ${calculatedMaxScale}`, 120 + graphWidth, yBarPos - 6);
         }
 
+        // SHOW THE TRANSPORT SECTOR ENTRIES IRRESPECTIVE OF UNIT CONSTRAINTS AND LOCALIZATION
         function filterTable() {
             const searchText = document.getElementById('searchBox').value.toLowerCase();
             const selectedEnv = document.getElementById('typeFilter').value;
             const selectedSector = document.getElementById('sectorFilter').value;
 
             const filtered = globalCachedStudies.filter(item => {
-                const itemText = `${item.study_title} ${item.authors} ${item.fuel} ${item.device} ${item.region_country}`.toLowerCase();
+                // If a study row belongs explicitly to the Transport sector, maintain absolute tracking visibility bypassing exclusions
+                const isTransportSector = item.sector && item.sector.toLowerCase().includes('transport');
+                if (isTransportSector && selectedSector === 'all' && searchText === '') {
+                    return true;
+                }
+
+                const itemText = `${item.study_title} ${item.authors} ${item.fuel} ${item.device} ${item.region_country} ${item.sector}`.toLowerCase();
                 const matchesSearch = itemText.includes(searchText);
                 const matchesEnv = (selectedEnv === 'all' || item.field_or_lab === selectedEnv);
                 const matchesSector = (selectedSector === 'all' || item.sector === selectedSector);
+                
                 return matchesSearch && matchesEnv && matchesSector;
             });
             renderTableRows(filtered);
@@ -613,7 +649,6 @@
 
         document.getElementById('searchBox').addEventListener('input', filterTable);
 
-        // Helper function to dynamically parse and split values from units
         function parseValueAndUnit(rawStr) {
             if (!rawStr && rawStr !== 0) return { value: "", unit: "" };
             const cleanStr = String(rawStr).trim();
@@ -625,13 +660,11 @@
             return { value, unit };
         }
 
-        // CSV Compilation Engine providing clean alphabetic-free metrics and a custom Unit column
         function generateCSVContent(studiesArray) {
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Device,Region/Country,Environment,Unit Column,PM25 Value,PM25 Uncertainty,PM25 N,BC Value,BC Uncertainty,BC N,OC Value,OC Uncertainty,OC N,CO Value,CO Uncertainty,CO N,CO2 Value,CO2 Uncertainty,CO2 N\n";
 
             studiesArray.forEach(item => {
-                // Read a sample metric to determine the standard environmental unit label safely
                 const parsedUnitObj = parseValueAndUnit(item.ef_pm25 || item.ef_bc || item.ef_oc || item.ef_co || item.ef_co2);
                 const standardUnit = parsedUnitObj.unit;
 
@@ -646,9 +679,7 @@
                     `"${item.device || ''}"`,
                     `"${item.region_country || ''}"`,
                     `"${item.field_or_lab || ''}"`,
-                    `"${standardUnit}"`, // Dedicated standalone units column
-                    
-                    // Values are dynamically stripped of any alphabetic text sequences securely
+                    `"${standardUnit}"`, 
                     `"${parseValueAndUnit(item.ef_pm25).value}"`, `"${(item.un_pm25 || '')}"`, `"${(item.n_pm25 || '')}"`,
                     `"${parseValueAndUnit(item.ef_bc).value}"`, `"${(item.un_bc || '')}"`, `"${(item.n_bc || '')}"`,
                     `"${parseValueAndUnit(item.ef_oc).value}"`, `"${(item.un_oc || '')}"`, `"${(item.n_oc || '')}"`,
