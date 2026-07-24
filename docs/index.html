@@ -90,7 +90,7 @@
     </div>
 
     <script>
-        // Extract parameters cleanly out of the running URL structure to handle routing automatically
+        // Extract parameters out of the URL path to handle routing automatically
         const pathSegments = window.location.pathname.split('/');
         const repoOwner = window.location.hostname.split('.')[0] || pathSegments[1];
         const apiUrl = `https://api.github.com/repos/${repoOwner}/Emissions/contents/data`;
@@ -113,33 +113,38 @@
                         }
 
                         const fileResponse = await fetch(file.download_url);
-                        const data = await fileResponse.json();
+                        const dataItems = await fileResponse.json();
                         
-                        const row = document.createElement("tr");
-                        row.setAttribute("data-environment", data.field_or_lab || "");
-                        
-                        row.innerHTML = `
-                            <td>
-                                ${data.doi ? `<a href="https://doi.org/${data.doi}" target="_blank" class="title-link"><strong style="font-size: 15px;">${data.study_title || 'Untitled Study'}</strong></a>` : `<strong>${data.study_title || 'Untitled Study'}</strong>`}
-                                <br>
-                                <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || 'Unknown'}</small>
-                                <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || 'N/A'}</span>
-                            </td>
-                            <td>
-                                <strong>Fuel:</strong> ${data.fuel || 'N/A'}<br>
-                                <strong>Device:</strong> ${data.device || 'N/A'}<br>
-                                <strong>Region:</strong> ${data.region_country || 'N/A'}<br>
-                                <span class="badge ${data.field_or_lab === 'Lab' ? 'badge-lab' : 'badge-field'}" style="margin-top: 4px; display: inline-block;">${data.field_or_lab || 'N/A'}</span>
-                            </td>
-                            <td>${data.ef_pm25 || '-'}${data.un_pm25 ? `<div class="sub-value">±${data.un_pm25} (N=${data.n_pm25 || '?'})</div>` : ''}</td>
-                            <td>${data.ef_bc || '-'}${data.un_bc ? `<div class="sub-value">±${data.un_bc} (N=${data.n_bc || '?'})</div>` : ''}</td>
-                            <td>${data.ef_oc || '-'}${data.un_oc ? `<div class="sub-value">±${data.un_oc} (N=${data.n_oc || '?'})</div>` : ''}</td>
-                            <td>
-                                <strong>CO:</strong> ${data.ef_co || '-'}<br>
-                                <small class="sub-value">CO₂: ${data.ef_co2 || '-'}</small>
-                            </td>
-                        `;
-                        tbody.appendChild(row);
+                        // Handle both single-object JSON files and array-list JSON files seamlessly
+                        const dataArray = Array.isArray(dataItems) ? dataItems : [dataItems];
+
+                        dataArray.forEach(data => {
+                            const row = document.createElement("tr");
+                            row.setAttribute("data-environment", data.field_or_lab || "");
+                            
+                            row.innerHTML = `
+                                <td>
+                                    ${data.doi ? `<a href="https://doi.org/${data.doi}" target="_blank" class="title-link"><strong style="font-size: 15px;">${data.study_title || 'Untitled Study'}</strong></a>` : `<strong>${data.study_title || 'Untitled Study'}</strong>`}
+                                    <br>
+                                    <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || 'Unknown'}</small>
+                                    <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || 'N/A'}</span>
+                                </td>
+                                <td>
+                                    <strong>Fuel:</strong> ${data.fuel || 'N/A'}<br>
+                                    <strong>Device:</strong> ${data.device || 'N/A'}<br>
+                                    <strong>Region:</strong> ${data.region_country || 'N/A'}<br>
+                                    <span class="badge ${data.field_or_lab === 'Lab' ? 'badge-lab' : 'badge-field'}" style="margin-top: 4px; display: inline-block;">${data.field_or_lab || 'N/A'}</span>
+                                </td>
+                                <td>${data.ef_pm25 || '-'}${data.un_pm25 ? `<div class="sub-value">±${data.un_pm25} (N=${data.n_pm25 || '?'})</div>` : ''}</td>
+                                <td>${data.ef_bc || '-'}${data.un_bc ? `<div class="sub-value">±${data.un_bc} (N=${data.n_bc || '?'})</div>` : ''}</td>
+                                <td>${data.ef_oc || '-'}${data.un_oc ? `<div class="sub-value">±${data.un_oc} (N=${data.n_oc || '?'})</div>` : ''}</td>
+                                <td>
+                                    <strong>CO:</strong> ${data.ef_co || '-'}<br>
+                                    <small class="sub-value">CO₂: ${data.ef_co2 || '-'}</small>
+                                </td>
+                            `;
+                            tbody.appendChild(row);
+                        });
                     }
                 }
 
