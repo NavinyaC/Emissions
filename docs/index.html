@@ -129,16 +129,20 @@
         .loading { padding: 20px; text-align: center; color: #57606a; font-style: italic; }
 
         /* Summary Dashboard Layout Graphics */
-        .summary-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-top: 20px; }
-        .summary-controls { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: #fafbfc; height: fit-content; }
+        .summary-layout { display: grid; grid-template-columns: 320px 1fr; gap: 30px; margin-top: 20px; }
+        .summary-controls { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: #fafbfc; height: fit-content; position: sticky; top: 80px; }
         .summary-controls h3 { margin-top: 0; color: #24292f; font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
         .filter-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
         .filter-group label { font-size: 12px; font-weight: 600; color: #57606a; }
         .btn-download { display: block; width: 100%; text-align: center; background-color: #24292f; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 20px; text-decoration: none; box-sizing: border-box; }
         .btn-download:hover { background-color: #1f2328; }
-        .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 25px; background: white; min-height: 400px; display: flex; flex-direction: column; }
-        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .chart-container { flex: 1; position: relative; width: 100%; height: 100%; min-height: 350px; }
+        
+        /* Multi-Chart Matrix Styles */
+        .charts-stack { display: flex; flex-direction: column; gap: 20px; }
+        .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .chart-container { position: relative; width: 100%; height: 110px; }
+        canvas { width: 100% !important; height: 110px !important; }
     </style>
 </head>
 <body>
@@ -212,39 +216,58 @@
         </div>
     </div>
 
-    <!-- 3. SUMMARY STATS PAGE VIEW (AGGREGATION ENGINE & BAR GRAPH) -->
+    <!-- 3. SUMMARY STATS PAGE VIEW (CASCADE FILTERS & SPECIES SPLIT PLOTS) -->
     <div id="summary-view" class="page-view">
         <div class="container">
             <div class="header">
                 <h1>Data Summary Insights</h1>
-                <p class="subtitle">Compute statistics and propagate mathematical uncertainties from compiled dataset entries.</p>
+                <p class="subtitle">Compute isolated statistics and visualize relative ranges for distinct tracking parameters.</p>
             </div>
             
             <div class="summary-layout">
                 <div class="summary-controls">
-                    <h3>Analytical Filters</h3>
+                    <h3>Cascade Bench Filters</h3>
                     <div class="filter-group">
                         <label for="sumSector">Sector Selection</label>
-                        <select id="sumSector" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()"></select>
+                        <select id="sumSector" class="filter-select" style="width:100%;" onchange="onSectorCascadeChange()"></select>
                     </div>
                     <div class="filter-group">
-                        <label for="sumFuel">Fuel Target</label>
-                        <select id="sumFuel" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()"></select>
+                        <label for="sumFuel">Fuel Target (Scoped)</label>
+                        <select id="sumFuel" class="filter-select" style="width:100%;" onchange="onFuelCascadeChange()"></select>
                     </div>
                     <div class="filter-group">
-                        <label for="sumDevice">Combustion Device</label>
+                        <label for="sumDevice">Combustion Device (Scoped)</label>
                         <select id="sumDevice" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()"></select>
                     </div>
                     <button class="btn-download" onclick="exportToExcel()">📥 Download Selection (.csv)</button>
+                    <div style="font-size:12px; color:#57606a; margin-top:15px; text-align:center;" id="sampleCountDisplay">Entries Matched: 0</div>
                 </div>
 
-                <div class="chart-card">
-                    <div class="chart-header">
-                        <strong id="chartTitle" style="font-size:16px; color:#24292f;">Weighted Mean Emission Factors (g/kg)</strong>
-                        <span style="font-size:12px; color:#57606a;" id="sampleCountDisplay">Entries Matched: 0</span>
+                <div class="charts-stack">
+                    <!-- PM2.5 Plot Card -->
+                    <div class="chart-card">
+                        <div class="chart-header"><strong>PM<sub>2.5</sub> Emission Factor Mean</strong><small class="sub-value" id="label-pm25">g/kg</small></div>
+                        <div class="chart-container"><canvas id="chart-pm25"></canvas></div>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="summaryChart"></canvas>
+                    <!-- BC Plot Card -->
+                    <div class="chart-card">
+                        <div class="chart-header"><strong>Black Carbon (BC) EF Mean</strong><small class="sub-value" id="label-bc">g/kg</small></div>
+                        <div class="chart-container"><canvas id="chart-bc"></canvas></div>
+                    </div>
+                    <!-- OC Plot Card -->
+                    <div class="chart-card">
+                        <div class="chart-header"><strong>Organic Carbon (OC) EF Mean</strong><small class="sub-value" id="label-oc">g/kg</small></div>
+                        <div class="chart-container"><canvas id="chart-oc"></canvas></div>
+                    </div>
+                    <!-- CO Plot Card -->
+                    <div class="chart-card">
+                        <div class="chart-header"><strong>Carbon Monoxide (CO) EF Mean</strong><small class="sub-value" id="label-co">g/kg</small></div>
+                        <div class="chart-container"><canvas id="chart-co"></canvas></div>
+                    </div>
+                    <!-- CO2 Plot Card -->
+                    <div class="chart-card">
+                        <div class="chart-header"><strong>Carbon Dioxide (CO<sub>2</sub>) EF Mean</strong><small class="sub-value" id="label-co2">g/kg</small></div>
+                        <div class="chart-container"><canvas id="chart-co2"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -259,20 +282,20 @@
             
             document.getElementById(`${tabId}-view`).classList.add('active');
             
-            // Fix for dynamic event target scoping across browsers
             const currentLink = Array.from(document.querySelectorAll('.nav-link')).find(link => link.textContent.toLowerCase() === tabId);
-            if(currentLink) currentLink.classList.add('active');
+            if(currentLink) {
+                currentLink.classList.add('active');
+                if(tabId === 'summary') onSummaryFilterChange();
+            }
         }
 
         // Automatic API Mapping Setup
         const pathSegments = window.location.pathname.split('/');
         const repoOwner = window.location.hostname.split('.')[0] || pathSegments[1];
         
-        // Dynamic Path Tracking Configurations
         const aboutFileUrl = `https://raw.githubusercontent.com/${repoOwner}/Emissions/main/data/about/about.json`;
         const studiesApiUrl = `https://api.github.com/repos/${repoOwner}/Emissions/contents/data/studies`;
 
-        // Global dataset array cache memory store
         let globalCachedStudies = [];
 
         // Load About Section Team Cards dynamically from data/about/about.json
@@ -303,7 +326,6 @@
             }
         }
 
-        // Helper function to format species EF metrics cleanly
         function formatEF(value, uncertainty, nSamples) {
             if (!value && value !== 0) return '-';
             let html = `<strong>${value}</strong>`;
@@ -338,7 +360,7 @@
                 }
 
                 renderTableRows(globalCachedStudies);
-                populateDynamicDropdowns();
+                populateInitialDropdowns();
 
             } catch (err) {
                 console.error(err);
@@ -385,43 +407,204 @@
             });
         }
 
-        // Populate Dynamic Dropdowns throughout the system layout mapping
-        function populateDynamicDropdowns() {
+        // Dropdown populator logic tracking changes
+        function populateInitialDropdowns() {
             const sectors = new Set();
-            const fuels = new Set();
-            const devices = new Set();
+            globalCachedStudies.forEach(item => { if (item.sector) sectors.add(item.sector); });
 
-            globalCachedStudies.forEach(item => {
-                if (item.sector) sectors.add(item.sector);
-                if (item.fuel) fuels.add(item.fuel);
-                if (item.device) devices.add(item.device);
-            });
-
-            // Registry Table Dynamic Sector Element Filter mapping
+            // Dynamic Sector Element Filter mapping table view
             const sectorFilter = document.getElementById("sectorFilter");
             sectorFilter.innerHTML = '<option value="all">All Sectors (Dynamic)</option>';
             Array.from(sectors).sort().forEach(s => {
                 sectorFilter.innerHTML += `<option value="${s}">${s}</option>`;
             });
 
-            // Analytical Summary Interface Element Dropdowns initialization mapping logic
-            setupSummaryDropdown("sumSector", sectors, "All Sectors");
-            setupSummaryDropdown("sumFuel", fuels, "All Fuels");
-            setupSummaryDropdown("sumDevice", devices, "All Devices");
+            // Summary View initial dropdown mapping load
+            const sumSector = document.getElementById("sumSector");
+            sumSector.innerHTML = '<option value="all">All Sectors</option>';
+            Array.from(sectors).sort().forEach(s => {
+                sumSector.innerHTML += `<option value="${s}">${s}</option>`;
+            });
 
-            // Execute automated graph rendering configuration layout
+            rebuildCascadeFuels();
+        }
+
+        // Cascade Step 1: Sector changes -> rebuild scoped Fuels selection menu
+        function onSectorCascadeChange() {
+            rebuildCascadeFuels();
+        }
+
+        function rebuildCascadeFuels() {
+            const selectedSector = document.getElementById("sumSector").value;
+            const targetFuels = new Set();
+
+            globalCachedStudies.forEach(item => {
+                if (selectedSector === "all" || item.sector === selectedSector) {
+                    if (item.fuel) targetFuels.add(item.fuel);
+                }
+            });
+
+            const sumFuel = document.getElementById("sumFuel");
+            sumFuel.innerHTML = '<option value="all">All Fuels (Scoped)</option>';
+            Array.from(targetFuels).sort().forEach(f => {
+                sumFuel.innerHTML += `<option value="${f}">${f}</option>`;
+            });
+
+            rebuildCascadeDevices();
+        }
+
+        // Cascade Step 2: Fuel selection changes -> rebuild scoped Devices selection menu
+        function onFuelCascadeChange() {
+            rebuildCascadeDevices();
+        }
+
+        function rebuildCascadeDevices() {
+            const selectedSector = document.getElementById("sumSector").value;
+            const selectedFuel = document.getElementById("sumFuel").value;
+            const targetDevices = new Set();
+
+            globalCachedStudies.forEach(item => {
+                const matchSector = (selectedSector === "all" || item.sector === selectedSector);
+                const matchFuel = (selectedFuel === "all" || item.fuel === selectedFuel);
+                
+                if (matchSector && matchFuel) {
+                    if (item.device) targetDevices.add(item.device);
+                }
+            });
+
+            const sumDevice = document.getElementById("sumDevice");
+            sumDevice.innerHTML = '<option value="all">All Devices (Scoped)</option>';
+            Array.from(targetDevices).sort().forEach(d => {
+                sumDevice.innerHTML += `<option value="${d}">${d}</option>`;
+            });
+
             onSummaryFilterChange();
         }
 
-        function setupSummaryDropdown(elementId, setElements, defaultText) {
-            const element = document.getElementById(elementId);
-            element.innerHTML = `<option value="all">${defaultText}</option>`;
-            Array.from(setElements).sort().forEach(item => {
-                element.innerHTML += `<option value="${item}">${item}</option>`;
+        // Central analytical math parsing calculation array triggers loop execution updates
+        function onSummaryFilterChange() {
+            const sector = document.getElementById("sumSector").value;
+            const fuel = document.getElementById("sumFuel").value;
+            const device = document.getElementById("sumDevice").value;
+
+            const targets = globalCachedStudies.filter(item => {
+                return (sector === "all" || item.sector === sector) &&
+                       (fuel === "all" || item.fuel === fuel) &&
+                       (device === "all" || item.device === device);
+            });
+
+            document.getElementById("sampleCountDisplay").textContent = `Entries Matched: ${targets.length}`;
+
+            const metrics = ["pm25", "bc", "oc", "co", "co2"];
+            
+            metrics.forEach(m => {
+                let sumWeightValues = 0;
+                let sumTotalSamples = 0;
+                let sumSquareUncertaintySamples = 0;
+
+                targets.forEach(item => {
+                    const rawVal = item[`ef_${m}`];
+                    // Strip arbitrary unit strings appended inside database objects natively
+                    const val = rawVal ? parseFloat(rawVal) : NaN;
+                    const un = item[`un_${m}`] ? parseFloat(item[`un_${m}`]) : 0;
+                    const n = item[`n_${m}`] ? parseInt(item[`n_${m}`]) : 1;
+
+                    if (!isNaN(val)) {
+                        sumWeightValues += val * n;
+                        sumTotalSamples += n;
+                        sumSquareUncertaintySamples += Math.pow(un * n, 2);
+                    }
+                });
+
+                const finalMean = sumTotalSamples > 0 ? (sumWeightValues / sumTotalSamples) : 0;
+                const finalUncertainty = sumTotalSamples > 0 ? (Math.sqrt(sumSquareUncertaintySamples) / sumTotalSamples) : 0;
+
+                renderSpeciesHorizontalBar(m, finalMean, finalUncertainty);
             });
         }
 
-        // Filter functionality for the central Data Table view registry matrix
+        // Render clean structural layout vector canvas blocks independently to isolate different metrics ranges safely
+        function renderSpeciesHorizontalBar(metricId, mean, uncertainty) {
+            const canvas = document.getElementById(`chart-${metricId}`);
+            const ctx = canvas.getContext("2d");
+            
+            const rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width * 2;
+            canvas.height = 70 * 2;
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `70px`;
+            ctx.scale(2, 2);
+
+            ctx.clearRect(0, 0, rect.width, 70);
+
+            // Establish static baseline structural boundary markers definitions based on species range groups securely
+            let maxValueLimit = 25; 
+            if (metricId === "co") maxValueLimit = 250;
+            if (metricId === "co2") maxValueLimit = 3500;
+
+            const graphWidth = rect.width - 120 - 40; // Allocate padding space safely
+            const fillingPercentageWidth = Math.min(1, mean / maxValueLimit) * graphWidth;
+            
+            const yBarPos = 25;
+            const barThicknessHeight = 22;
+
+            // Render background measurement helper target tick lines
+            ctx.strokeStyle = "#e1e4e8";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(120, yBarPos + barThicknessHeight);
+            ctx.lineTo(120 + graphWidth, yBarPos + barThicknessHeight);
+            ctx.stroke();
+
+            // Render dynamic species bar column safely
+            ctx.fillStyle = (metricId === "co" || metricId === "co2") ? "#24292f" : "#0969da";
+            ctx.fillRect(120, yBarPos, fillingPercentageWidth, barThicknessHeight);
+
+            // Append textual indicator labels natively
+            ctx.fillStyle = "#24292f";
+            ctx.font = "bold 13px -apple-system, sans-serif";
+            ctx.textAlign = "right";
+            ctx.fillText(mean.toFixed(mean > 10 ? 1 : 3), 100, yBarPos + 16);
+
+            // Draw mathematical Error Whisker brackets on top of horizontal grids
+            if (uncertainty > 0 && mean > 0) {
+                const errorPixelWidth = (uncertainty / maxValueLimit) * graphWidth;
+                const coreXCenterPos = 120 + fillingPercentageWidth;
+
+                ctx.strokeStyle = "#ea4335";
+                ctx.lineWidth = 2;
+
+                // Central horizontal connection wire line segment
+                ctx.beginPath();
+                ctx.moveTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + barThicknessHeight / 2);
+                ctx.lineTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + barThicknessHeight / 2);
+                ctx.stroke();
+
+                // Left whisker edge bracket boundary cap
+                ctx.beginPath();
+                ctx.moveTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + 5);
+                ctx.lineTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + barThicknessHeight - 5);
+                ctx.stroke();
+
+                // Right whisker edge bracket boundary cap
+                ctx.beginPath();
+                ctx.moveTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + 5);
+                ctx.lineTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + barThicknessHeight - 5);
+                ctx.stroke();
+            }
+
+            // Append custom bounds context descriptions indicator tags safely
+            ctx.fillStyle = "#57606a";
+            ctx.font = "11px -apple-system, sans-serif";
+            ctx.textAlign = "left";
+            ctx.fillText(`±${uncertainty.toFixed(uncertainty > 10 ? 1 : 3)}`, 120 + fillingPercentageWidth + (uncertainty > 0 ? (uncertainty / maxValueLimit * graphWidth) + 8 : 8), yBarPos + 15);
+
+            // Vertical constraint max bounds dynamic limits context indicator print mapping logic
+            ctx.textAlign = "right";
+            ctx.fillText(`Max Scale: ${maxValueLimit}`, 120 + graphWidth, yBarPos - 6);
+        }
+
+        // Dynamic Filtering Core table registry interface matrix configuration trigger logic map
         function filterTable() {
             const searchText = document.getElementById('searchBox').value.toLowerCase();
             const selectedEnv = document.getElementById('typeFilter').value;
@@ -441,165 +624,6 @@
 
         document.getElementById('searchBox').addEventListener('input', filterTable);
 
-        // ANALYTICAL WORKBENCH MATHEMATICAL CALCULATIONS AND ENGINE ENGINE LOGIC
-        let summaryChartInstance = null;
-
-        function onSummaryFilterChange() {
-            const sector = document.getElementById("sumSector").value;
-            const fuel = document.getElementById("sumFuel").value;
-            const device = document.getElementById("sumDevice").value;
-
-            const targets = globalCachedStudies.filter(item => {
-                return (sector === "all" || item.sector === sector) &&
-                       (fuel === "all" || item.fuel === fuel) &&
-                       (device === "all" || item.device === device);
-            });
-
-            document.getElementById("sampleCountDisplay").textContent = `Entries Matched: ${targets.length}`;
-
-            // Execute weighted mathematical formulas across targeted entities array elements
-            const metrics = ["pm25", "bc", "oc", "co", "co2"];
-            const computedMeans = {};
-            const computedUncertainties = {};
-
-            metrics.forEach(m => {
-                let sumWeightValues = 0;
-                let sumTotalSamples = 0;
-                let sumSquareUncertaintySamples = 0;
-
-                targets.forEach(item => {
-                    // Extract numerical coefficients natively out of text metrics parsing arrays out of strings cleanly
-                    const rawVal = item[`ef_${m}`];
-                    const val = rawVal ? parseFloat(rawVal) : NaN;
-                    const un = item[`un_${m}`] ? parseFloat(item[`un_${m}`]) : 0;
-                    const n = item[`n_${m}`] ? parseInt(item[`n_${m}`]) : 1; // Default back securely onto 1 sample point weight bounds safely if null
-
-                    if (!isNaN(val)) {
-                        sumWeightValues += val * n;
-                        sumTotalSamples += n;
-                        sumSquareUncertaintySamples += Math.pow(un * n, 2);
-                    }
-                });
-
-                if (sumTotalSamples > 0) {
-                    computedMeans[m] = sumWeightValues / sumTotalSamples;
-                    computedUncertainties[m] = Math.sqrt(sumSquareUncertaintySamples) / sumTotalSamples;
-                } else {
-                    computedMeans[m] = 0;
-                    computedUncertainties[m] = 0;
-                }
-            });
-
-            renderNativeCanvasGraph(computedMeans, computedUncertainties);
-        }
-
-        // High accuracy rendering matrix using native browser Canvas contexts safely without calling bloated external server tracking scripts
-        function renderNativeCanvasGraph(means, uncertainties) {
-            const canvas = document.getElementById("summaryChart");
-            const ctx = canvas.getContext("2d");
-            
-            // Set scale factor resolutions high to account for retina screens crisp layout viewports automatically
-            const rect = canvas.parentNode.getBoundingClientRect();
-            canvas.width = rect.width * 2;
-            canvas.height = 350 * 2;
-            canvas.style.width = `${rect.width}px`;
-            canvas.style.height = `350px`;
-            ctx.scale(2, 2);
-
-            ctx.clearRect(0, 0, rect.width, 350);
-
-            const labels = ["PM2.5", "BC", "OC", "CO", "CO2"];
-            const keys = ["pm25", "bc", "oc", "co", "co2"];
-            const values = keys.map(k => means[keys.indexOf(k) !== -1 ? k : 'pm25'] || 0);
-            const errs = keys.map(k => uncertainties[keys.indexOf(k) !== -1 ? k : 'pm25'] || 0);
-
-            // Calculate dynamic vertical scale scaling viewport targets dynamically safely
-            const maxValue = Math.max(...values.map((v, i) => v + errs[i])) || 10;
-            const yScaleCeil = Math.ceil(maxValue * 1.15);
-
-            // Establish standard vector alignment fields boundaries padding matrices definitions layout
-            const paddingLeft = 50;
-            const paddingRight = 20;
-            const paddingTop = 30;
-            const paddingBottom = 40;
-            const graphWidth = rect.width - paddingLeft - paddingRight;
-            const graphHeight = 350 - paddingTop - paddingBottom;
-
-            // Render background horizontal measurement helper guidelines grid layouts securely
-            ctx.strokeStyle = "#e1e4e8";
-            ctx.lineWidth = 1;
-            ctx.fillStyle = "#57606a";
-            ctx.font = "11px -apple-system, sans-serif";
-            ctx.textAlign = "right";
-
-            const linesCount = 5;
-            for(let i = 0; i <= linesCount; i++) {
-                const currentGridValue = (yScaleCeil / linesCount) * i;
-                const yPos = 350 - paddingBottom - (graphHeight * (i / linesCount));
-                
-                ctx.beginPath();
-                ctx.moveTo(paddingLeft, yPos);
-                ctx.lineTo(rect.width - paddingRight, yPos);
-                ctx.stroke();
-
-                ctx.fillText(currentGridValue.toFixed(currentGridValue > 10 ? 0 : 2), paddingLeft - 10, yPos + 4);
-            }
-
-            // Draw data vector columns bars looping elements metrics properties layout maps definitions
-            const barWidth = (graphWidth / labels.length) * 0.55;
-            const spacing = graphWidth / labels.length;
-
-            labels.forEach((label, idx) => {
-                const key = keys[idx];
-                const currentBarVal = values[idx];
-                const currentErrVal = errs[idx];
-
-                const barHeight = (currentBarVal / yScaleCeil) * graphHeight;
-                const xPos = paddingLeft + (spacing * idx) + (spacing - barWidth) / 2;
-                const yPos = 350 - paddingBottom - barHeight;
-
-                // Alternate gradient configurations dynamically mapping colors definitions natively
-                ctx.fillStyle = idx < 3 ? "#0969da" : "#24292f";
-                ctx.fillRect(xPos, yPos, barWidth, barHeight);
-
-                // Build Mathematical Error Bars boundaries structures alignment grids
-                if (currentErrVal > 0) {
-                    const errorPixelHeight = (currentErrVal / yScaleCeil) * graphHeight;
-                    ctx.strokeStyle = "#ea4335";
-                    ctx.lineWidth = 2;
-
-                    // Central spine logic
-                    ctx.beginPath();
-                    ctx.moveTo(xPos + barWidth / 2, Math.max(paddingTop, yPos - errorPixelHeight));
-                    ctx.lineTo(xPos + barWidth / 2, Math.min(350 - paddingBottom, yPos + errorPixelHeight));
-                    ctx.stroke();
-
-                    // Upper cap marker alignment bounds matrix
-                    ctx.beginPath();
-                    ctx.moveTo(xPos + barWidth / 2 - 5, Math.max(paddingTop, yPos - errorPixelHeight));
-                    ctx.lineTo(xPos + barWidth / 2 + 5, Math.max(paddingTop, yPos - errorPixelHeight));
-                    ctx.stroke();
-
-                    // Lower cap marker alignment bounds matrix
-                    ctx.beginPath();
-                    ctx.moveTo(xPos + barWidth / 2 - 5, Math.min(350 - paddingBottom, yPos + errorPixelHeight));
-                    ctx.lineTo(xPos + barWidth / 2 + 5, Math.min(350 - paddingBottom, yPos + errorPixelHeight));
-                    ctx.stroke();
-                }
-
-                // Render horizontal X axis category labels securely
-                ctx.fillStyle = "#24292f";
-                ctx.textAlign = "center";
-                ctx.font = "12px -apple-system, sans-serif";
-                ctx.fillText(label, xPos + barWidth / 2, 350 - paddingBottom + 20);
-
-                // Render value context indicator texts on top headers positions cleanly
-                ctx.fillStyle = "#57606a";
-                ctx.font = "bold 11px -apple-system, sans-serif";
-                ctx.fillText(currentBarVal.toFixed(currentBarVal > 10 ? 1 : 3), xPos + barWidth / 2, Math.max(15, yPos - (currentErrVal > 0 ? (currentErrVal / yScaleCeil * graphHeight) + 6 : 8)));
-            });
-        }
-
         // Client-Side CSV Spreadsheet Generation Exporter Mechanism Engine
         function exportToExcel() {
             const sector = document.getElementById("sumSector").value;
@@ -617,7 +641,6 @@
                 return;
             }
 
-            // Document mapping data values directly securely formatting structures
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Device,Region/Country,Environment,PM25 Value,PM25 Uncertainty,PM25 N,BC Value,BC Uncertainty,BC N,OC Value,OC Uncertainty,OC N,CO Value,CO Uncertainty,CO N,CO2 Value,CO2 Uncertainty,CO2 N\n";
 
@@ -642,7 +665,6 @@
                 csvContent += rowsArray.join(",") + "\n";
             });
 
-            // Anchor routing download simulation link sequence execution trigger
             const encodingUri = encodeURI(csvContent);
             const anchorToken = document.createElement("a");
             anchorToken.setAttribute("href", encodingUri);
@@ -652,7 +674,7 @@
             document.body.removeChild(anchorToken);
         }
 
-        // Keep system responsive across active viewport size changes
+        // Keep horizontal canvas metrics dynamically scale crisp upon active resizing actions
         window.addEventListener('resize', () => {
             if(document.getElementById('summary-view').classList.contains('active')) {
                 onSummaryFilterChange();
