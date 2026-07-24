@@ -108,11 +108,13 @@
         .team-name { font-size: 18px; font-weight: 600; margin: 10px 0 5px 0; }
         .team-role { font-size: 13px; color: #57606a; line-height: 1.4; }
 
-        /* Data Grid Elements */
-        .controls-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .search-input, .filter-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
+        /* Controls and Dropdowns */
+        .controls-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .search-input, .filter-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: white; }
         .search-input { flex: 1; min-width: 250px; }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15); }
+        
+        /* Data Grid Table Elements */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -125,6 +127,18 @@
         .title-link { text-decoration: none; color: var(--primary); }
         .title-link:hover { text-decoration: underline; }
         .loading { padding: 20px; text-align: center; color: #57606a; font-style: italic; }
+
+        /* Summary Dashboard Layout Graphics */
+        .summary-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 30px; margin-top: 20px; }
+        .summary-controls { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: #fafbfc; height: fit-content; }
+        .summary-controls h3 { margin-top: 0; color: #24292f; font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+        .filter-group label { font-size: 12px; font-weight: 600; color: #57606a; }
+        .btn-download { display: block; width: 100%; text-align: center; background-color: #24292f; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 20px; text-decoration: none; box-sizing: border-box; }
+        .btn-download:hover { background-color: #1f2328; }
+        .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 25px; background: white; min-height: 400px; display: flex; flex-direction: column; }
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-container { flex: 1; position: relative; width: 100%; height: 100%; min-height: 350px; }
     </style>
 </head>
 <body>
@@ -165,10 +179,13 @@
 
             <div class="controls-bar">
                 <input type="text" id="searchBox" class="search-input" placeholder="🔍 Search by study title, author, sector, fuel, or region...">
-                <select id="typeFilter" class="filter-select">
+                <select id="typeFilter" class="filter-select" onchange="filterTable()">
                     <option value="all">All Environments</option>
                     <option value="Lab">Lab Studies</option>
                     <option value="Field">Field Studies</option>
+                </select>
+                <select id="sectorFilter" class="filter-select" onchange="filterTable()">
+                    <option value="all">All Sectors (Dynamic)</option>
                 </select>
             </div>
 
@@ -195,14 +212,42 @@
         </div>
     </div>
 
-    <!-- 3. SUMMARY STATS PAGE VIEW PLACEHOLDER -->
+    <!-- 3. SUMMARY STATS PAGE VIEW (AGGREGATION ENGINE & BAR GRAPH) -->
     <div id="summary-view" class="page-view">
         <div class="container">
             <div class="header">
                 <h1>Data Summary Insights</h1>
-                <p class="subtitle">Aggregated metrics and statistical cross-comparisons computed from database records.</p>
+                <p class="subtitle">Compute statistics and propagate mathematical uncertainties from compiled dataset entries.</p>
             </div>
-            <p style="color: #57606a; font-style: italic;">Analytical summaries, graphical charts, and dynamic trend curves will populate here as data entries expand.</p>
+            
+            <div class="summary-layout">
+                <div class="summary-controls">
+                    <h3>Analytical Filters</h3>
+                    <div class="filter-group">
+                        <label for="sumSector">Sector Selection</label>
+                        <select id="sumSector" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()"></select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sumFuel">Fuel Target</label>
+                        <select id="sumFuel" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()"></select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sumDevice">Combustion Device</label>
+                        <select id="sumDevice" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()"></select>
+                    </div>
+                    <button class="btn-download" onclick="exportToExcel()">📥 Download Selection (.csv)</button>
+                </div>
+
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <strong id="chartTitle" style="font-size:16px; color:#24292f;">Weighted Mean Emission Factors (g/kg)</strong>
+                        <span style="font-size:12px; color:#57606a;" id="sampleCountDisplay">Entries Matched: 0</span>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="summaryChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -213,7 +258,10 @@
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             
             document.getElementById(`${tabId}-view`).classList.add('active');
-            event.currentTarget.classList.add('active');
+            
+            // Fix for dynamic event target scoping across browsers
+            const currentLink = Array.from(document.querySelectorAll('.nav-link')).find(link => link.textContent.toLowerCase() === tabId);
+            if(currentLink) currentLink.classList.add('active');
         }
 
         // Automatic API Mapping Setup
@@ -223,6 +271,9 @@
         // Dynamic Path Tracking Configurations
         const aboutFileUrl = `https://raw.githubusercontent.com/${repoOwner}/Emissions/main/data/about/about.json`;
         const studiesApiUrl = `https://api.github.com/repos/${repoOwner}/Emissions/contents/data/studies`;
+
+        // Global dataset array cache memory store
+        let globalCachedStudies = [];
 
         // Load About Section Team Cards dynamically from data/about/about.json
         async function fetchAboutSection() {
@@ -252,7 +303,7 @@
             }
         }
 
-        // Helper function to format species EF metrics clearly
+        // Helper function to format species EF metrics cleanly
         function formatEF(value, uncertainty, nSamples) {
             if (!value && value !== 0) return '-';
             let html = `<strong>${value}</strong>`;
@@ -274,79 +325,339 @@
                 if (!response.ok) throw new Error();
                 
                 const files = await response.json();
-                let hasData = false;
+                globalCachedStudies = [];
 
                 for (let file of files) {
                     if (file.name.endsWith('.json') && file.name !== '.gitkeep') {
-                        if (!hasData) {
-                            tbody.innerHTML = ""; 
-                            hasData = true;
-                        }
-
                         const fileResponse = await fetch(file.download_url);
                         const dataItems = await fileResponse.json();
                         const dataArray = Array.isArray(dataItems) ? dataItems : [dataItems];
-
-                        dataArray.forEach(data => {
-                            const row = document.createElement("tr");
-                            row.setAttribute("data-environment", data.field_or_lab || "");
-                            
-                            row.innerHTML = `
-                                <td>
-                                    ${data.doi ? `<a href="https://doi.org/${data.doi}" target="_blank" class="title-link"><strong style="font-size: 14px;">${data.study_title || 'Untitled Study'}</strong></a>` : `<strong>${data.study_title || 'Untitled Study'}</strong>`}
-                                    <br>
-                                    <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || 'Unknown'}</small>
-                                    <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || 'N/A'}</span>
-                                </td>
-                                <td>
-                                    <strong>Sector:</strong> ${data.sector || 'N/A'}<br>
-                                    <strong>Sub-Sector:</strong> ${data.sub_sector || 'N/A'}<br>
-                                    <strong>Fuel:</strong> ${data.fuel || 'N/A'}<br>
-                                    <strong>Device:</strong> ${data.device || 'N/A'}<br>
-                                    <strong>Region:</strong> ${data.region_country || 'N/A'}<br>
-                                    <span class="badge ${data.field_or_lab === 'Lab' ? 'badge-lab' : 'badge-field'}" style="margin-top: 4px; display: inline-block;">${data.field_or_lab || 'N/A'}</span>
-                                </td>
-                                <td>${formatEF(data.ef_pm25, data.un_pm25, data.n_pm25)}</td>
-                                <td>${formatEF(data.ef_bc, data.un_bc, data.n_bc)}</td>
-                                <td>${formatEF(data.ef_oc, data.un_oc, data.n_oc)}</td>
-                                <td>${formatEF(data.ef_co, data.un_co, data.n_co)}</td>
-                                <td>${formatEF(data.ef_co2, data.un_co2, data.n_co2)}</td>
-                            `;
-                            tbody.appendChild(row);
-                        });
+                        
+                        dataArray.forEach(item => globalCachedStudies.push(item));
                     }
                 }
 
-                if (!hasData) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="loading">No data files found in database subfolder yet.</td></tr>`;
-                }
+                renderTableRows(globalCachedStudies);
+                populateDynamicDropdowns();
+
             } catch (err) {
                 console.error(err);
                 tbody.innerHTML = `<tr><td colspan="7" class="loading" style="color: red;">Error loading scientific database profiles.</td></tr>`;
             }
         }
 
-        function filterTable() {
-            const searchBox = document.getElementById('searchBox');
-            const typeFilter = document.getElementById('typeFilter');
-            const searchText = searchBox.value.toLowerCase();
-            const selectedEnv = typeFilter.value;
-            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+        function renderTableRows(studies) {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
 
-            for (let row of rows) {
-                if (row.classList.contains('loading')) continue;
-                const textContent = row.textContent.toLowerCase();
-                const envType = row.getAttribute('data-environment');
-                
-                const matchesSearch = textContent.includes(searchText);
-                const matchesEnv = (selectedEnv === 'all' || envType === selectedEnv);
-
-                row.style.display = (matchesSearch && matchesEnv) ? '' : 'none';
+            if (studies.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="loading">No matches found.</td></tr>`;
+                return;
             }
+
+            studies.forEach(data => {
+                const row = document.createElement("tr");
+                row.setAttribute("data-environment", data.field_or_lab || "");
+                row.setAttribute("data-sector", data.sector || "");
+                
+                row.innerHTML = `
+                    <td>
+                        ${data.doi ? `<a href="https://doi.org/${data.doi}" target="_blank" class="title-link"><strong style="font-size: 14px;">${data.study_title || 'Untitled Study'}</strong></a>` : `<strong>${data.study_title || 'Untitled Study'}</strong>`}
+                        <br>
+                        <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || 'Unknown'}</small>
+                        <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || 'N/A'}</span>
+                    </td>
+                    <td>
+                        <strong>Sector:</strong> ${data.sector || 'N/A'}<br>
+                        <strong>Sub-Sector:</strong> ${data.sub_sector || 'N/A'}<br>
+                        <strong>Fuel:</strong> ${data.fuel || 'N/A'}<br>
+                        <strong>Device:</strong> ${data.device || 'N/A'}<br>
+                        <strong>Region:</strong> ${data.region_country || 'N/A'}<br>
+                        <span class="badge ${data.field_or_lab === 'Lab' ? 'badge-lab' : 'badge-field'}" style="margin-top: 4px; display: inline-block;">${data.field_or_lab || 'N/A'}</span>
+                    </td>
+                    <td>${formatEF(data.ef_pm25, data.un_pm25, data.n_pm25)}</td>
+                    <td>${formatEF(data.ef_bc, data.un_bc, data.n_bc)}</td>
+                    <td>${formatEF(data.ef_oc, data.un_oc, data.n_oc)}</td>
+                    <td>${formatEF(data.ef_co, data.un_co, data.n_co)}</td>
+                    <td>${formatEF(data.ef_co2, data.un_co2, data.n_co2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Populate Dynamic Dropdowns throughout the system layout mapping
+        function populateDynamicDropdowns() {
+            const sectors = new Set();
+            const fuels = new Set();
+            const devices = new Set();
+
+            globalCachedStudies.forEach(item => {
+                if (item.sector) sectors.add(item.sector);
+                if (item.fuel) fuels.add(item.fuel);
+                if (item.device) devices.add(item.device);
+            });
+
+            // Registry Table Dynamic Sector Element Filter mapping
+            const sectorFilter = document.getElementById("sectorFilter");
+            sectorFilter.innerHTML = '<option value="all">All Sectors (Dynamic)</option>';
+            Array.from(sectors).sort().forEach(s => {
+                sectorFilter.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+
+            // Analytical Summary Interface Element Dropdowns initialization mapping logic
+            setupSummaryDropdown("sumSector", sectors, "All Sectors");
+            setupSummaryDropdown("sumFuel", fuels, "All Fuels");
+            setupSummaryDropdown("sumDevice", devices, "All Devices");
+
+            // Execute automated graph rendering configuration layout
+            onSummaryFilterChange();
+        }
+
+        function setupSummaryDropdown(elementId, setElements, defaultText) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<option value="all">${defaultText}</option>`;
+            Array.from(setElements).sort().forEach(item => {
+                element.innerHTML += `<option value="${item}">${item}</option>`;
+            });
+        }
+
+        // Filter functionality for the central Data Table view registry matrix
+        function filterTable() {
+            const searchText = document.getElementById('searchBox').value.toLowerCase();
+            const selectedEnv = document.getElementById('typeFilter').value;
+            const selectedSector = document.getElementById('sectorFilter').value;
+
+            const filtered = globalCachedStudies.filter(item => {
+                const itemText = `${item.study_title} ${item.authors} ${item.fuel} ${item.device} ${item.region_country}`.toLowerCase();
+                const matchesSearch = itemText.includes(searchText);
+                const matchesEnv = (selectedEnv === 'all' || item.field_or_lab === selectedEnv);
+                const matchesSector = (selectedSector === 'all' || item.sector === selectedSector);
+                
+                return matchesSearch && matchesEnv && matchesSector;
+            });
+
+            renderTableRows(filtered);
         }
 
         document.getElementById('searchBox').addEventListener('input', filterTable);
-        document.getElementById('typeFilter').addEventListener('change', filterTable);
+
+        // ANALYTICAL WORKBENCH MATHEMATICAL CALCULATIONS AND ENGINE ENGINE LOGIC
+        let summaryChartInstance = null;
+
+        function onSummaryFilterChange() {
+            const sector = document.getElementById("sumSector").value;
+            const fuel = document.getElementById("sumFuel").value;
+            const device = document.getElementById("sumDevice").value;
+
+            const targets = globalCachedStudies.filter(item => {
+                return (sector === "all" || item.sector === sector) &&
+                       (fuel === "all" || item.fuel === fuel) &&
+                       (device === "all" || item.device === device);
+            });
+
+            document.getElementById("sampleCountDisplay").textContent = `Entries Matched: ${targets.length}`;
+
+            // Execute weighted mathematical formulas across targeted entities array elements
+            const metrics = ["pm25", "bc", "oc", "co", "co2"];
+            const computedMeans = {};
+            const computedUncertainties = {};
+
+            metrics.forEach(m => {
+                let sumWeightValues = 0;
+                let sumTotalSamples = 0;
+                let sumSquareUncertaintySamples = 0;
+
+                targets.forEach(item => {
+                    // Extract numerical coefficients natively out of text metrics parsing arrays out of strings cleanly
+                    const rawVal = item[`ef_${m}`];
+                    const val = rawVal ? parseFloat(rawVal) : NaN;
+                    const un = item[`un_${m}`] ? parseFloat(item[`un_${m}`]) : 0;
+                    const n = item[`n_${m}`] ? parseInt(item[`n_${m}`]) : 1; // Default back securely onto 1 sample point weight bounds safely if null
+
+                    if (!isNaN(val)) {
+                        sumWeightValues += val * n;
+                        sumTotalSamples += n;
+                        sumSquareUncertaintySamples += Math.pow(un * n, 2);
+                    }
+                });
+
+                if (sumTotalSamples > 0) {
+                    computedMeans[m] = sumWeightValues / sumTotalSamples;
+                    computedUncertainties[m] = Math.sqrt(sumSquareUncertaintySamples) / sumTotalSamples;
+                } else {
+                    computedMeans[m] = 0;
+                    computedUncertainties[m] = 0;
+                }
+            });
+
+            renderNativeCanvasGraph(computedMeans, computedUncertainties);
+        }
+
+        // High accuracy rendering matrix using native browser Canvas contexts safely without calling bloated external server tracking scripts
+        function renderNativeCanvasGraph(means, uncertainties) {
+            const canvas = document.getElementById("summaryChart");
+            const ctx = canvas.getContext("2d");
+            
+            // Set scale factor resolutions high to account for retina screens crisp layout viewports automatically
+            const rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width * 2;
+            canvas.height = 350 * 2;
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `350px`;
+            ctx.scale(2, 2);
+
+            ctx.clearRect(0, 0, rect.width, 350);
+
+            const labels = ["PM2.5", "BC", "OC", "CO", "CO2"];
+            const keys = ["pm25", "bc", "oc", "co", "co2"];
+            const values = keys.map(k => means[keys.indexOf(k) !== -1 ? k : 'pm25'] || 0);
+            const errs = keys.map(k => uncertainties[keys.indexOf(k) !== -1 ? k : 'pm25'] || 0);
+
+            // Calculate dynamic vertical scale scaling viewport targets dynamically safely
+            const maxValue = Math.max(...values.map((v, i) => v + errs[i])) || 10;
+            const yScaleCeil = Math.ceil(maxValue * 1.15);
+
+            // Establish standard vector alignment fields boundaries padding matrices definitions layout
+            const paddingLeft = 50;
+            const paddingRight = 20;
+            const paddingTop = 30;
+            const paddingBottom = 40;
+            const graphWidth = rect.width - paddingLeft - paddingRight;
+            const graphHeight = 350 - paddingTop - paddingBottom;
+
+            // Render background horizontal measurement helper guidelines grid layouts securely
+            ctx.strokeStyle = "#e1e4e8";
+            ctx.lineWidth = 1;
+            ctx.fillStyle = "#57606a";
+            ctx.font = "11px -apple-system, sans-serif";
+            ctx.textAlign = "right";
+
+            const linesCount = 5;
+            for(let i = 0; i <= linesCount; i++) {
+                const currentGridValue = (yScaleCeil / linesCount) * i;
+                const yPos = 350 - paddingBottom - (graphHeight * (i / linesCount));
+                
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, yPos);
+                ctx.lineTo(rect.width - paddingRight, yPos);
+                ctx.stroke();
+
+                ctx.fillText(currentGridValue.toFixed(currentGridValue > 10 ? 0 : 2), paddingLeft - 10, yPos + 4);
+            }
+
+            // Draw data vector columns bars looping elements metrics properties layout maps definitions
+            const barWidth = (graphWidth / labels.length) * 0.55;
+            const spacing = graphWidth / labels.length;
+
+            labels.forEach((label, idx) => {
+                const key = keys[idx];
+                const currentBarVal = values[idx];
+                const currentErrVal = errs[idx];
+
+                const barHeight = (currentBarVal / yScaleCeil) * graphHeight;
+                const xPos = paddingLeft + (spacing * idx) + (spacing - barWidth) / 2;
+                const yPos = 350 - paddingBottom - barHeight;
+
+                // Alternate gradient configurations dynamically mapping colors definitions natively
+                ctx.fillStyle = idx < 3 ? "#0969da" : "#24292f";
+                ctx.fillRect(xPos, yPos, barWidth, barHeight);
+
+                // Build Mathematical Error Bars boundaries structures alignment grids
+                if (currentErrVal > 0) {
+                    const errorPixelHeight = (currentErrVal / yScaleCeil) * graphHeight;
+                    ctx.strokeStyle = "#ea4335";
+                    ctx.lineWidth = 2;
+
+                    // Central spine logic
+                    ctx.beginPath();
+                    ctx.moveTo(xPos + barWidth / 2, Math.max(paddingTop, yPos - errorPixelHeight));
+                    ctx.lineTo(xPos + barWidth / 2, Math.min(350 - paddingBottom, yPos + errorPixelHeight));
+                    ctx.stroke();
+
+                    // Upper cap marker alignment bounds matrix
+                    ctx.beginPath();
+                    ctx.moveTo(xPos + barWidth / 2 - 5, Math.max(paddingTop, yPos - errorPixelHeight));
+                    ctx.lineTo(xPos + barWidth / 2 + 5, Math.max(paddingTop, yPos - errorPixelHeight));
+                    ctx.stroke();
+
+                    // Lower cap marker alignment bounds matrix
+                    ctx.beginPath();
+                    ctx.moveTo(xPos + barWidth / 2 - 5, Math.min(350 - paddingBottom, yPos + errorPixelHeight));
+                    ctx.lineTo(xPos + barWidth / 2 + 5, Math.min(350 - paddingBottom, yPos + errorPixelHeight));
+                    ctx.stroke();
+                }
+
+                // Render horizontal X axis category labels securely
+                ctx.fillStyle = "#24292f";
+                ctx.textAlign = "center";
+                ctx.font = "12px -apple-system, sans-serif";
+                ctx.fillText(label, xPos + barWidth / 2, 350 - paddingBottom + 20);
+
+                // Render value context indicator texts on top headers positions cleanly
+                ctx.fillStyle = "#57606a";
+                ctx.font = "bold 11px -apple-system, sans-serif";
+                ctx.fillText(currentBarVal.toFixed(currentBarVal > 10 ? 1 : 3), xPos + barWidth / 2, Math.max(15, yPos - (currentErrVal > 0 ? (currentErrVal / yScaleCeil * graphHeight) + 6 : 8)));
+            });
+        }
+
+        // Client-Side CSV Spreadsheet Generation Exporter Mechanism Engine
+        function exportToExcel() {
+            const sector = document.getElementById("sumSector").value;
+            const fuel = document.getElementById("sumFuel").value;
+            const device = document.getElementById("sumDevice").value;
+
+            const filteredTargets = globalCachedStudies.filter(item => {
+                return (sector === "all" || item.sector === sector) &&
+                       (fuel === "all" || item.fuel === fuel) &&
+                       (device === "all" || item.device === device);
+            });
+
+            if (filteredTargets.length === 0) {
+                alert("The targeted query does not contain records to bundle into a spreadsheet download container profile.");
+                return;
+            }
+
+            // Document mapping data values directly securely formatting structures
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Device,Region/Country,Environment,PM25 Value,PM25 Uncertainty,PM25 N,BC Value,BC Uncertainty,BC N,OC Value,OC Uncertainty,OC N,CO Value,CO Uncertainty,CO N,CO2 Value,CO2 Uncertainty,CO2 N\n";
+
+            filteredTargets.forEach(item => {
+                const rowsArray = [
+                    `"${(item.study_title || '').replace(/"/g, '""')}"`,
+                    `"${(item.authors || '').replace(/"/g, '""')}"`,
+                    `"${item.year_publication || ''}"`,
+                    `"${item.doi || ''}"`,
+                    `"${item.sector || ''}"`,
+                    `"${item.sub_sector || ''}"`,
+                    `"${item.fuel || ''}"`,
+                    `"${item.device || ''}"`,
+                    `"${item.region_country || ''}"`,
+                    `"${item.field_or_lab || ''}"`,
+                    `"${item.ef_pm25 || ''}"`, `"${item.un_pm25 || ''}"`, `"${item.n_pm25 || ''}"`,
+                    `"${item.ef_bc || ''}"`, `"${item.un_bc || ''}"`, `"${item.n_bc || ''}"`,
+                    `"${item.ef_oc || ''}"`, `"${item.un_oc || ''}"`, `"${item.n_oc || ''}"`,
+                    `"${item.ef_co || ''}"`, `"${item.un_co || ''}"`, `"${item.n_co || ''}"`,
+                    `"${item.ef_co2 || ''}"`, `"${item.un_co2 || ''}"`, `"${item.n_co2 || ''}"`
+                ];
+                csvContent += rowsArray.join(",") + "\n";
+            });
+
+            // Anchor routing download simulation link sequence execution trigger
+            const encodingUri = encodeURI(csvContent);
+            const anchorToken = document.createElement("a");
+            anchorToken.setAttribute("href", encodingUri);
+            anchorToken.setAttribute("download", `emissions_export_${sector}_${fuel}.csv`);
+            document.body.appendChild(anchorToken);
+            anchorToken.click();
+            document.body.removeChild(anchorToken);
+        }
+
+        // Keep system responsive across active viewport size changes
+        window.addEventListener('resize', () => {
+            if(document.getElementById('summary-view').classList.contains('active')) {
+                onSummaryFilterChange();
+            }
+        });
 
         // Run initialization scripts on system launch
         fetchAboutSection();
