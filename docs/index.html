@@ -312,7 +312,6 @@
             const currentLink = Array.from(document.querySelectorAll('.nav-link')).find(link => link.textContent.toLowerCase() === tabId);
             if(currentLink) {
                 currentLink.classList.add('active');
-                // Only run calculations if we have data cached to prevent app breaking crashes
                 if(tabId === 'summary' && globalCachedStudies.length > 0) onSummaryFilterChange();
             }
         }
@@ -463,7 +462,7 @@
             const sumFuel = document.getElementById("sumFuel");
             sumFuel.innerHTML = '<option value="all">Select a Fuel...</option>';
             Array.from(targetFuels).sort().forEach(f => {
-                sumFuel.innerHTML += `<option value="${f}">${f}</option>';
+                sumFuel.innerHTML += `<option value="${f}">${f}</option>`;
             });
 
             rebuildCascadeDevices(isInitialStartup);
@@ -483,7 +482,7 @@
             const sumDevice = document.getElementById("sumDevice");
             sumDevice.innerHTML = '<option value="all">Select a Device...</option>';
             Array.from(targetDevices).sort().forEach(d => {
-                sumDevice.innerHTML += `<option value="${d}">${d}</option>';
+                sumDevice.innerHTML += `<option value="${d}">${d}</option>`;
             });
 
             if (!isInitialStartup) onSummaryFilterChange();
@@ -728,7 +727,6 @@
             if(document.getElementById('summary-view').classList.contains('active')) onSummaryFilterChange();
         });
 
-        // Initialize content layout loads safely in step queues
         fetchAboutSection();
         fetchDatabase();
     </script>
