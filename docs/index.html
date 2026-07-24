@@ -3,224 +3,178 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emissions Data Repository</title>
+    <title>Global Emissions Database Portal</title>
     <style>
         :root {
             --primary: #0969da;
             --bg: #f6f8fa;
             --text: #24292f;
             --border: #d0d7de;
-            --card-bg: #ffffff;
         }
-        
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             margin: 0; 
-            padding: 0;
+            padding: 40px 20px;
             background-color: var(--bg); 
             color: var(--text); 
-            line-height: 1.5;
         }
-
-        header {
-            background-color: #24292f;
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        header h1 { margin: 0; font-size: 24px; font-weight: 500; }
-
         .container { 
-            max-width: 1300px; 
-            margin: 40px auto; 
-            padding: 0 20px;
+            max-width: 1200px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(140, 149, 159, 0.15); 
         }
-
-        .search-bar {
-            background: var(--card-bg);
-            padding: 15px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 25px;
-            display: flex;
-            gap: 15px;
+        .header {
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
         }
-
-        .search-bar input, .search-bar select {
-            padding: 8px 12px;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .search-bar input { flex-grow: 1; }
-
-        .table-container {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            overflow-x: auto;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        table { 
-            width: 100%; 
-            border-collapse: collapse; 
-            text-align: left; 
-            font-size: 14px;
-        }
-
-        th, td { 
-            padding: 14px 16px; 
-            border-bottom: 1px solid var(--border); 
-            vertical-align: top;
-        }
-
-        th { 
-            background-color: #f6f8fa; 
-            font-weight: 600;
-            color: #57606a;
-        }
-
+        h1 { margin: 0 0 10px 0; color: var(--primary); font-size: 28px; }
+        .subtitle { color: #57606a; margin: 0; font-size: 16px; }
+        .controls-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .search-input, .filter-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
+        .search-input { flex: 1; min-width: 250px; }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15); }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        th, td { padding: 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th { background-color: #f6f8fa; font-weight: 600; color: #57606a; }
         tr:hover { background-color: #f8f9fa; }
-
-        .badge-year { background: #eaeef2; color: #24292f; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-        .badge-type { background: #ddf4ff; color: #0969da; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
-
-        .parameter-cell {
-            white-space: nowrap;
-        }
-
-        .sub-value {
-            color: #57606a;
-            font-size: 12px;
-            display: block;
-            margin-top: 2px;
-        }
+        .badge { background: #dafbe1; color: #1a7f37; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-lab { background: #ddf4ff; color: #0969da; }
+        .badge-field { background: #fff8c5; color: #9a6700; }
+        .sub-value { font-size: 12px; color: #57606a; margin-top: 2px; }
+        .title-link { text-decoration: none; color: var(--primary); }
+        .title-link:hover { text-decoration: underline; }
+        .loading { padding: 20px; text-align: center; color: #57606a; font-style: italic; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Global Emissions Database</h1>
-        <small style="color: #8c959f;">Public Data Summary Portal</small>
-    </header>
-
     <div class="container">
-        <!-- Live UI Interactive Controls Placeholder -->
-        <div class="search-bar">
-            <input type="text" placeholder="Search by study title, author, or country..." disabled>
-            <select disabled><option>All Regions</option></select>
-            <select disabled><option>All Methods (Field/Lab)</option></select>
+        <div class="header">
+            <h1>Global Emissions Database</h1>
+            <p class="subtitle">A public repository for verified scientific datasets detailing particulate matter and trace gas emissions.</p>
         </div>
 
-        <!-- Main Data Display Table -->
-        <div class="table-container">
-            <table>
+        <div class="controls-bar">
+            <input type="text" id="searchBox" class="search-input" placeholder="🔍 Search by study title, author, fuel, or region...">
+            <select id="typeFilter" class="filter-select">
+                <option value="all">All Environments</option>
+                <option value="Lab">Lab Studies</option>
+                <option value="Field">Field Studies</option>
+            </select>
+        </div>
+
+        <div class="table-responsive">
+            <table id="portalTable">
                 <thead>
                     <tr>
-                        <th style="width: 25%;">Study Citation</th>
-                        <th style="width: 15%;">Parameters</th>
-                        <th style="width: 15%;">Experimental Setup</th>
-                        <th>PM<sub>2.5</sub></th>
-                        <th>BC (Black Carbon)</th>
-                        <th>OC (Organic Carbon)</th>
-                        <th>CO</th>
-                        <th>CO<sub>2</sub></th>
+                        <th style="width: 30%;">Study Metadata</th>
+                        <th>Experimental Configuration</th>
+                        <th>PM<sub>2.5</sub> Emission Factor <br><small>(Uncertainty / N)</small></th>
+                        <th>BC Emission Factor <br><small>(Uncertainty / N)</small></th>
+                        <th>Organic Carbon (OC) <br><small>(Uncertainty / N)</small></th>
+                        <th>Gaseous Carbon (CO / CO<sub>2</sub>)</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <!-- Mock Entry 1 -->
+                <tbody id="tableBody">
                     <tr>
-                        <td>
-                            <strong style="color: var(--primary);">Characterization of Aerosol Emission Factors from Biomass Cookstoves</strong>
-                            <div style="font-size: 12px; margin-top: 4px; color: #57606a;">Doe, J., Smith, A., & Kumar, R.</div>
-                            <small style="color: #8c959f;">DOI: 10.1016/j.atmosenv.2026.01</small>
-                        </td>
-                        <td>
-                            <span class="badge-year">2026</span>
-                            <span class="badge-type">Lab Study</span>
-                        </td>
-                        <td>
-                            <strong>Device:</strong> Improved Cookstove<br>
-                            <strong>Fuel:</strong> Acacia Wood<br>
-                            <strong>Region:</strong> Rajasthan, India
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>4.23</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±0.45</span>
-                            <span class="sub-value">Samples: N=12</span>
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>0.68</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±0.08</span>
-                            <span class="sub-value">Samples: N=12</span>
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>2.10</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±0.15</span>
-                            <span class="sub-value">Samples: N=12</span>
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>45.2</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±3.10</span>
-                            <span class="sub-value">Samples: N=12</span>
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>1620</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±45.0</span>
-                            <span class="sub-value">Samples: N=12</span>
-                        </td>
-                    </tr>
-                    
-                    <!-- Mock Entry 2 -->
-                    <tr>
-                        <td>
-                            <strong style="color: var(--primary);">Field Measurements of Agricultural Residue Burning Emissions</strong>
-                            <div style="font-size: 12px; margin-top: 4px; color: #57606a;">Singh, M., & Patel, P.</div>
-                            <small style="color: #8c959f;">DOI: 10.1021/acs.est.6b022</small>
-                        </td>
-                        <td>
-                            <span class="badge-year">2025</span>
-                            <span class="badge-type">Field Study</span>
-                        </td>
-                        <td>
-                            <strong>Device:</strong> Open Burning<br>
-                            <strong>Fuel:</strong> Rice Straw<br>
-                            <strong>Region:</strong> Punjab, India
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>8.70</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±1.20</span>
-                            <span class="sub-value">Samples: N=6</span>
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>0.41</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±0.05</span>
-                            <span class="sub-value">Samples: N=6</span>
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>4.80</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±0.90</span>
-                            <span class="sub-value">Samples: N=6</span>
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>62.1</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±5.40</span>
-                            <span class="sub-value">Samples: N=6</span>
-                        </td>
-                        <td class="parameter-cell">
-                            <strong>1510</strong> <small>g/kg</small>
-                            <span class="sub-value">Unc: ±38.0</span>
-                            <span class="sub-value">Samples: N=6</span>
-                        </td>
+                        <td colspan="6" class="loading" id="loadingRow">Loading entries from database...</td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
+
+    <script>
+        // Extract parameters cleanly out of the running URL structure to handle routing automatically
+        const pathSegments = window.location.pathname.split('/');
+        const repoOwner = window.location.hostname.split('.')[0] || pathSegments[1];
+        const apiUrl = `https://api.github.com/repos/${repoOwner}/Emissions/contents/data`;
+
+        async function fetchDatabase() {
+            const tbody = document.getElementById("tableBody");
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) throw new Error("Could not access data folder");
+                
+                const files = await response.json();
+                let hasData = false;
+
+                for (let file of files) {
+                    if (file.name.endsWith('.json') && file.name !== '.gitkeep') {
+                        if (!hasData) {
+                            tbody.innerHTML = ""; 
+                            hasData = true;
+                        }
+
+                        const fileResponse = await fetch(file.download_url);
+                        const data = await fileResponse.json();
+                        
+                        const row = document.createElement("tr");
+                        row.setAttribute("data-environment", data.field_or_lab || "");
+                        
+                        row.innerHTML = `
+                            <td>
+                                ${data.doi ? `<a href="https://doi.org/${data.doi}" target="_blank" class="title-link"><strong style="font-size: 15px;">${data.study_title || 'Untitled Study'}</strong></a>` : `<strong>${data.study_title || 'Untitled Study'}</strong>`}
+                                <br>
+                                <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || 'Unknown'}</small>
+                                <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || 'N/A'}</span>
+                            </td>
+                            <td>
+                                <strong>Fuel:</strong> ${data.fuel || 'N/A'}<br>
+                                <strong>Device:</strong> ${data.device || 'N/A'}<br>
+                                <strong>Region:</strong> ${data.region_country || 'N/A'}<br>
+                                <span class="badge ${data.field_or_lab === 'Lab' ? 'badge-lab' : 'badge-field'}" style="margin-top: 4px; display: inline-block;">${data.field_or_lab || 'N/A'}</span>
+                            </td>
+                            <td>${data.ef_pm25 || '-'}${data.un_pm25 ? `<div class="sub-value">±${data.un_pm25} (N=${data.n_pm25 || '?'})</div>` : ''}</td>
+                            <td>${data.ef_bc || '-'}${data.un_bc ? `<div class="sub-value">±${data.un_bc} (N=${data.n_bc || '?'})</div>` : ''}</td>
+                            <td>${data.ef_oc || '-'}${data.un_oc ? `<div class="sub-value">±${data.un_oc} (N=${data.n_oc || '?'})</div>` : ''}</td>
+                            <td>
+                                <strong>CO:</strong> ${data.ef_co || '-'}<br>
+                                <small class="sub-value">CO₂: ${data.ef_co2 || '-'}</small>
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    }
+                }
+
+                if (!hasData) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="loading">No data files found in backend database yet.</td></tr>`;
+                }
+            } catch (err) {
+                console.error("Database loading error:", err);
+                tbody.innerHTML = `<tr><td colspan="6" class="loading" style="color: red;">Error loading database profiles. Ensure repository files are public.</td></tr>`;
+            }
+        }
+
+        function filterTable() {
+            const searchBox = document.getElementById('searchBox');
+            const typeFilter = document.getElementById('typeFilter');
+            const searchText = searchBox.value.toLowerCase();
+            const selectedEnv = typeFilter.value;
+            const rows = document.getElementById('tableBody').getElementsByTagName('tr');
+
+            for (let row of rows) {
+                if (row.classList.contains('loading')) continue;
+                const textContent = row.textContent.toLowerCase();
+                const envType = row.getAttribute('data-environment');
+                
+                const matchesSearch = textContent.includes(searchText);
+                const matchesEnv = (selectedEnv === 'all' || envType === selectedEnv);
+
+                row.style.display = (matchesSearch && matchesEnv) ? '' : 'none';
+            }
+        }
+
+        document.getElementById('searchBox').addEventListener('input', filterTable);
+        document.getElementById('typeFilter').addEventListener('change', filterTable);
+
+        fetchDatabase();
+    </script>
 </body>
 </html>
