@@ -1,0 +1,22 @@
+{
+  "study_title": "Emissions from Residential Biomass Cookstoves",
+  "year_publication": "2026",
+  "authors": "J. Smith, A. Kumar",
+  "corresponding_author": "Dr. A. Kumar",
+  "doi": "10.1016/j.atmosenv.demo",
+  "device": "Fan-driven gasifier",
+  "fuel": "Wood Pellets",
+  "region_country": "Rajasthan, India",
+  "field_or_lab": "Field",
+  "ef_pm25": "2.45 g/kg",
+  "un_pm25": "0.31",
+  "n_pm25": "12",
+  "ef_bc": "0.42 g/kg",
+  "un_bc": "0.08",
+  "n_bc": "12",
+  "ef_oc": "1.12 g/kg",
+  "un_oc": "0.15",
+  "n_oc": "12",
+  "ef_co": "18.2 g/kg",
+  "ef_co2": "1620 g/kg"
+}
