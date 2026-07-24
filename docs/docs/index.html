@@ -3,73 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emissions Data Portal</title>
+    <title>Emissions Data Repository</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 40px; background-color: #f6f8fa; color: #24292f; }
-        h1 { border-bottom: 2px solid #d0d7de; padding-bottom: 10px; color: #0969da; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; text-align: left; }
-        th, td { padding: 12px; border-bottom: 1px solid #d0d7de; }
-        th { background-color: #f6f8fa; }
-        .badge { background: #dafbe1; color: #1a7f37; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        :root {
+            --primary: #0969da;
+            --bg: #f6f8fa;
+            --text: #24292f;
+            --border: #d0d7de;
+            --card-bg: #ffffff;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0; 
+            padding: 0;
+            background-color: var(--bg); 
+            color: var(--text); 
+            line-height: 1.5;
+        }
+
+        header {
+            background-color: #24292f;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 { margin: 0; font-size: 24px; font-weight: 500; }
+
+        .container { 
+            max-width: 1300px; 
+            margin: 40px auto; 
+            padding: 0 20px;
+        }
+
+        .search-bar {
+            background: var(--card-bg);
+            padding: 15px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .search-bar input, .search-bar select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .search-bar input { flex-grow: 1; }
+
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            text-align: left; 
+            font-size: 14px;
+        }
+
+        th, td { 
+            padding: 14px 16px; 
+            border-bottom: 1px solid var(--border); 
+            vertical-align: top;
+        }
+
+        th { 
+            background-color: #f6f8fa; 
+            font-weight: 600;
+            color: #57606a;
+        }
+
+        tr:hover { background-color: #f8f9fa; }
+
+        .badge-year { background: #eaeef2; color: #24292f; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .badge-type { background: #ddf4ff; color: #0969da; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+
+        .parameter-cell {
+            white-space: nowrap;
+        }
+
+        .sub-value {
+            color: #57606a;
+            font-size: 12px;
+            display: block;
+            margin-top: 2px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+
+    <header>
         <h1>Global Emissions Database</h1>
-        <p>Summarized public portal displaying verified academic emissions metrics.</p>
-        <table id="data-table">
-            <thead>
-                <tr>
-                    <th>Study Title</th>
-                    <th>Authors</th>
-                    <th>Year</th>
-                    <th>Region</th>
-                    <th>Device/Fuel</th>
-                    <th>PM<sub>2.5</sub> EF</th>
-                    <th>BC EF</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Dynamic data will load here -->
-            </tbody>
-        </table>
+        <small style="color: #8c959f;">Public Data Summary Portal</small>
+    </header>
+
+    <div class="container">
+        <!-- Live UI Interactive Controls Placeholder -->
+        <div class="search-bar">
+            <input type="text" placeholder="Search by study title, author, or country..." disabled>
+            <select disabled><option>All Regions</option></select>
+            <select disabled><option>All Methods (Field/Lab)</option></select>
+        </div>
+
+        <!-- Main Data Display Table -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Study Citation</th>
+                        <th style="width: 15%;">Parameters</th>
+                        <th style="width: 15%;">Experimental Setup</th>
+                        <th>PM<sub>2.5</sub></th>
+                        <th>BC (Black Carbon)</th>
+                        <th>OC (Organic Carbon)</th>
+                        <th>CO</th>
+                        <th>CO<sub>2</sub></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Mock Entry 1 -->
+                    <tr>
+                        <td>
+                            <strong style="color: var(--primary);">Characterization of Aerosol Emission Factors from Biomass Cookstoves</strong>
+                            <div style="font-size: 12px; margin-top: 4px; color: #57606a;">Doe, J., Smith, A., & Kumar, R.</div>
+                            <small style="color: #8c959f;">DOI: 10.1016/j.atmosenv.2026.01</small>
+                        </td>
+                        <td>
+                            <span class="badge-year">2026</span>
+                            <span class="badge-type">Lab Study</span>
+                        </td>
+                        <td>
+                            <strong>Device:</strong> Improved Cookstove<br>
+                            <strong>Fuel:</strong> Acacia Wood<br>
+                            <strong>Region:</strong> Rajasthan, India
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>4.23</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±0.45</span>
+                            <span class="sub-value">Samples: N=12</span>
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>0.68</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±0.08</span>
+                            <span class="sub-value">Samples: N=12</span>
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>2.10</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±0.15</span>
+                            <span class="sub-value">Samples: N=12</span>
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>45.2</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±3.10</span>
+                            <span class="sub-value">Samples: N=12</span>
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>1620</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±45.0</span>
+                            <span class="sub-value">Samples: N=12</span>
+                        </td>
+                    </tr>
+                    
+                    <!-- Mock Entry 2 -->
+                    <tr>
+                        <td>
+                            <strong style="color: var(--primary);">Field Measurements of Agricultural Residue Burning Emissions</strong>
+                            <div style="font-size: 12px; margin-top: 4px; color: #57606a;">Singh, M., & Patel, P.</div>
+                            <small style="color: #8c959f;">DOI: 10.1021/acs.est.6b022</small>
+                        </td>
+                        <td>
+                            <span class="badge-year">2025</span>
+                            <span class="badge-type">Field Study</span>
+                        </td>
+                        <td>
+                            <strong>Device:</strong> Open Burning<br>
+                            <strong>Fuel:</strong> Rice Straw<br>
+                            <strong>Region:</strong> Punjab, India
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>8.70</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±1.20</span>
+                            <span class="sub-value">Samples: N=6</span>
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>0.41</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±0.05</span>
+                            <span class="sub-value">Samples: N=6</span>
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>4.80</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±0.90</span>
+                            <span class="sub-value">Samples: N=6</span>
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>62.1</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±5.40</span>
+                            <span class="sub-value">Samples: N=6</span>
+                        </td>
+                        <td class="parameter-cell">
+                            <strong>1510</strong> <small>g/kg</small>
+                            <span class="sub-value">Unc: ±38.0</span>
+                            <span class="sub-value">Samples: N=6</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <script>
-        // Adjust these to point directly to your repository's public data path
-        const repoOwner = window.location.hostname.split('.')[0];
-        const repoName = "Emissions";
-        const apiUrl = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/data`;
-
-        async function loadData() {
-            try {
-                const response = await fetch(apiUrl);
-                const files = await response.json();
-                const tbody = document.querySelector("#data-table tbody");
-
-                for (let file of files) {
-                    if (file.name.endsWith('.json')) {
-                        const fileRes = await fetch(file.download_url);
-                        const data = await fileRes.json();
-                        
-                        const row = `<tr>
-                            <td><strong>${data.study_title || 'N/A'}</strong><br><small>DOI: ${data.doi || 'N/A'}</small></td>
-                            <td>${data.authors || 'N/A'}</td>
-                            <td><span class="badge">${data.year_publication || 'N/A'}</span></td>
-                            <td>${data.region_country || 'N/A'} (${data.field_or_lab || ''})</td>
-                            <td>${data.device || 'N/A'} / ${data.fuel || 'N/A'}</td>
-                            <td>${data.ef_pm25 || '-'}</td>
-                            <td>${data.ef_bc || '-'}</td>
-                        </tr>`;
-                        tbody.innerHTML += row;
-                    }
-                }
-            } catch (err) {
-                console.error("Error loading database files:", err);
-            }
-        }
-        loadData();
-    </script>
 </body>
 </html>
