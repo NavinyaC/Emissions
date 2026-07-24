@@ -6,7 +6,7 @@
     <title>Global Emissions Database Portal</title>
     <style>
         :root {
-            --primary: #0969da;
+            --primary: #872917;
             --bg: #f6f8fa;
             --text: #24292f;
             --border: #d0d7de;
@@ -83,6 +83,7 @@
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 25px;
             margin-top: 30px;
+            margin-bottom: 40px;
         }
         .team-card {
             border: 1px solid var(--border);
@@ -107,12 +108,20 @@
         }
         .team-name { font-size: 18px; font-weight: 600; margin: 10px 0 5px 0; }
         .team-role { font-size: 13px; color: #57606a; line-height: 1.4; }
+        .submission-links { background: #fafbfc; border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-top: 30px; }
+        .submission-links p { margin-top: 0; font-weight: 500; }
+        .submission-links ul { margin: 0; padding-left: 20px; color: var(--primary); }
+        .submission-links li { margin-bottom: 8px; }
+        .submission-links a { color: var(--primary); font-weight: 600; text-decoration: none; }
+        .submission-links a:hover { text-decoration: underline; }
 
         /* Controls and Dropdowns */
         .controls-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
         .search-input, .filter-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: white; }
         .search-input { flex: 1; min-width: 250px; }
-        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15); }
+        .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(135, 41, 23, 0.15); }
+        .btn-action { background-color: var(--primary); color: white; border: none; padding: 10px 16px; font-weight: 600; font-size: 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-action:hover { background-color: #6e1d13; }
         
         /* Data Grid Table Elements */
         .table-responsive { overflow-x: auto; }
@@ -170,6 +179,17 @@
             <div class="team-grid" id="teamContainer">
                 <div class="loading">Loading developer infrastructure data...</div>
             </div>
+
+            <!-- Grammatically Corrected Submission Block -->
+            <div class="submission-links">
+                <p>💡 <strong>Data Contribution & Curation Protocol:</strong></p>
+                <span>Please use the following links to report new data, request data updates, or flag issues in the data:</span>
+                <ul style="margin-top: 12px;">
+                    <li><a href="#" target="_blank">Submit New Dataset Profile</a></li>
+                    <li><a href="#" target="_blank">Request Version/Parameter Updates</a></li>
+                    <li><a href="#" target="_blank">Report Data Discrepancy or Issue</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -191,6 +211,7 @@
                 <select id="sectorFilter" class="filter-select" onchange="filterTable()">
                     <option value="all">All Sectors (Dynamic)</option>
                 </select>
+                <button class="btn-action" onclick="exportDataViewToExcel()">📥 Download Registry (.csv)</button>
             </div>
 
             <div class="table-responsive">
@@ -216,7 +237,7 @@
         </div>
     </div>
 
-    <!-- 3. SUMMARY STATS PAGE VIEW (CASCADE FILTERS & SPECIES SPLIT PLOTS) -->
+    <!-- 3. SUMMARY STATS PAGE VIEW -->
     <div id="summary-view" class="page-view">
         <div class="container">
             <div class="header">
@@ -239,32 +260,27 @@
                         <label for="sumDevice">Combustion Device (Scoped)</label>
                         <select id="sumDevice" class="filter-select" style="width:100%;" onchange="onSummaryFilterChange()"></select>
                     </div>
-                    <button class="btn-download" onclick="exportToExcel()">📥 Download Selection (.csv)</button>
+                    <button class="btn-download" onclick="exportSummarySelectionToExcel()">📥 Download Selection (.csv)</button>
                     <div style="font-size:12px; color:#57606a; margin-top:15px; text-align:center;" id="sampleCountDisplay">Entries Matched: 0</div>
                 </div>
 
                 <div class="charts-stack">
-                    <!-- PM2.5 Plot Card -->
                     <div class="chart-card">
                         <div class="chart-header"><strong>PM<sub>2.5</sub> Emission Factor Mean</strong><small class="sub-value" id="label-pm25">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-pm25"></canvas></div>
                     </div>
-                    <!-- BC Plot Card -->
                     <div class="chart-card">
                         <div class="chart-header"><strong>Black Carbon (BC) EF Mean</strong><small class="sub-value" id="label-bc">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-bc"></canvas></div>
                     </div>
-                    <!-- OC Plot Card -->
                     <div class="chart-card">
                         <div class="chart-header"><strong>Organic Carbon (OC) EF Mean</strong><small class="sub-value" id="label-oc">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-oc"></canvas></div>
                     </div>
-                    <!-- CO Plot Card -->
                     <div class="chart-card">
                         <div class="chart-header"><strong>Carbon Monoxide (CO) EF Mean</strong><small class="sub-value" id="label-co">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-co"></canvas></div>
                     </div>
-                    <!-- CO2 Plot Card -->
                     <div class="chart-card">
                         <div class="chart-header"><strong>Carbon Dioxide (CO<sub>2</sub>) EF Mean</strong><small class="sub-value" id="label-co2">g/kg</small></div>
                         <div class="chart-container"><canvas id="chart-co2"></canvas></div>
@@ -275,11 +291,9 @@
     </div>
 
     <script>
-        // Tab Router Routing Mechanism
         function switchTab(tabId) {
             document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
-            
             document.getElementById(`${tabId}-view`).classList.add('active');
             
             const currentLink = Array.from(document.querySelectorAll('.nav-link')).find(link => link.textContent.toLowerCase() === tabId);
@@ -289,7 +303,6 @@
             }
         }
 
-        // Automatic API Mapping Setup
         const pathSegments = window.location.pathname.split('/');
         const repoOwner = window.location.hostname.split('.')[0] || pathSegments[1];
         
@@ -298,7 +311,6 @@
 
         let globalCachedStudies = [];
 
-        // Load About Section Team Cards dynamically from data/about/about.json
         async function fetchAboutSection() {
             const container = document.getElementById("teamContainer");
             try {
@@ -338,10 +350,8 @@
             return html;
         }
 
-        // Load Emissions Core Table Database Records from data/studies/
         async function fetchDatabase() {
             const tbody = document.getElementById("tableBody");
-
             try {
                 const response = await fetch(studiesApiUrl);
                 if (!response.ok) throw new Error();
@@ -354,14 +364,11 @@
                         const fileResponse = await fetch(file.download_url);
                         const dataItems = await fileResponse.json();
                         const dataArray = Array.isArray(dataItems) ? dataItems : [dataItems];
-                        
                         dataArray.forEach(item => globalCachedStudies.push(item));
                     }
                 }
-
                 renderTableRows(globalCachedStudies);
                 populateInitialDropdowns();
-
             } catch (err) {
                 console.error(err);
                 tbody.innerHTML = `<tr><td colspan="7" class="loading" style="color: red;">Error loading scientific database profiles.</td></tr>`;
@@ -407,19 +414,16 @@
             });
         }
 
-        // Dropdown populator logic tracking changes
         function populateInitialDropdowns() {
             const sectors = new Set();
             globalCachedStudies.forEach(item => { if (item.sector) sectors.add(item.sector); });
 
-            // Dynamic Sector Element Filter mapping table view
             const sectorFilter = document.getElementById("sectorFilter");
             sectorFilter.innerHTML = '<option value="all">All Sectors (Dynamic)</option>';
             Array.from(sectors).sort().forEach(s => {
                 sectorFilter.innerHTML += `<option value="${s}">${s}</option>`;
             });
 
-            // Summary View initial dropdown mapping load
             const sumSector = document.getElementById("sumSector");
             sumSector.innerHTML = '<option value="all">All Sectors</option>';
             Array.from(sectors).sort().forEach(s => {
@@ -429,10 +433,8 @@
             rebuildCascadeFuels();
         }
 
-        // Cascade Step 1: Sector changes -> rebuild scoped Fuels selection menu
-        function onSectorCascadeChange() {
-            rebuildCascadeFuels();
-        }
+        function onSectorCascadeChange() { rebuildCascadeFuels(); }
+        function onFuelCascadeChange() { rebuildCascadeDevices(); }
 
         function rebuildCascadeFuels() {
             const selectedSector = document.getElementById("sumSector").value;
@@ -453,11 +455,6 @@
             rebuildCascadeDevices();
         }
 
-        // Cascade Step 2: Fuel selection changes -> rebuild scoped Devices selection menu
-        function onFuelCascadeChange() {
-            rebuildCascadeDevices();
-        }
-
         function rebuildCascadeDevices() {
             const selectedSector = document.getElementById("sumSector").value;
             const selectedFuel = document.getElementById("sumFuel").value;
@@ -466,10 +463,7 @@
             globalCachedStudies.forEach(item => {
                 const matchSector = (selectedSector === "all" || item.sector === selectedSector);
                 const matchFuel = (selectedFuel === "all" || item.fuel === selectedFuel);
-                
-                if (matchSector && matchFuel) {
-                    if (item.device) targetDevices.add(item.device);
-                }
+                if (matchSector && matchFuel && item.device) targetDevices.add(item.device);
             });
 
             const sumDevice = document.getElementById("sumDevice");
@@ -481,7 +475,20 @@
             onSummaryFilterChange();
         }
 
-        // Central analytical math parsing calculation array triggers loop execution updates
+        // Dynamic Mathematical Ceiling Round-up Function
+        function getDynamicNearestCeiling(value) {
+            if (value <= 0) return 1;
+            const logBase10 = Math.floor(Math.log10(value));
+            const magnitudeUnit = Math.pow(10, logBase10);
+            
+            // Establish localized step limits based on the magnitude unit
+            let step = magnitudeUnit / 2;
+            if (logBase10 >= 1) step = magnitudeUnit / 2; 
+            if (logBase10 >= 2) step = magnitudeUnit / 4; 
+
+            return Math.ceil(value / step) * step;
+        }
+
         function onSummaryFilterChange() {
             const sector = document.getElementById("sumSector").value;
             const fuel = document.getElementById("sumFuel").value;
@@ -504,7 +511,6 @@
 
                 targets.forEach(item => {
                     const rawVal = item[`ef_${m}`];
-                    // Strip arbitrary unit strings appended inside database objects natively
                     const val = rawVal ? parseFloat(rawVal) : NaN;
                     const un = item[`un_${m}`] ? parseFloat(item[`un_${m}`]) : 0;
                     const n = item[`n_${m}`] ? parseInt(item[`n_${m}`]) : 1;
@@ -519,12 +525,15 @@
                 const finalMean = sumTotalSamples > 0 ? (sumWeightValues / sumTotalSamples) : 0;
                 const finalUncertainty = sumTotalSamples > 0 ? (Math.sqrt(sumSquareUncertaintySamples) / sumTotalSamples) : 0;
 
-                renderSpeciesHorizontalBar(m, finalMean, finalUncertainty);
+                // Calculate the dynamic ceiling rule: mean + uncertainty rounded up cleanly
+                const requiredMaxExtent = finalMean + finalUncertainty;
+                const calculatedMaxScale = finalMean > 0 ? getDynamicNearestCeiling(requiredMaxExtent) : 10;
+
+                renderSpeciesHorizontalBar(m, finalMean, finalUncertainty, calculatedMaxScale);
             });
         }
 
-        // Render clean structural layout vector canvas blocks independently to isolate different metrics ranges safely
-        function renderSpeciesHorizontalBar(metricId, mean, uncertainty) {
+        function renderSpeciesHorizontalBar(metricId, mean, uncertainty, calculatedMaxScale) {
             const canvas = document.getElementById(`chart-${metricId}`);
             const ctx = canvas.getContext("2d");
             
@@ -537,18 +546,12 @@
 
             ctx.clearRect(0, 0, rect.width, 70);
 
-            // Establish static baseline structural boundary markers definitions based on species range groups securely
-            let maxValueLimit = 25; 
-            if (metricId === "co") maxValueLimit = 250;
-            if (metricId === "co2") maxValueLimit = 3500;
-
-            const graphWidth = rect.width - 120 - 40; // Allocate padding space safely
-            const fillingPercentageWidth = Math.min(1, mean / maxValueLimit) * graphWidth;
+            const graphWidth = rect.width - 120 - 40; 
+            const fillingPercentageWidth = Math.min(1, mean / calculatedMaxScale) * graphWidth;
             
             const yBarPos = 25;
             const barThicknessHeight = 22;
 
-            // Render background measurement helper target tick lines
             ctx.strokeStyle = "#e1e4e8";
             ctx.lineWidth = 1;
             ctx.beginPath();
@@ -556,55 +559,48 @@
             ctx.lineTo(120 + graphWidth, yBarPos + barThicknessHeight);
             ctx.stroke();
 
-            // Render dynamic species bar column safely
-            ctx.fillStyle = (metricId === "co" || metricId === "co2") ? "#24292f" : "#0969da";
+            // Set custom hex colors matching requested profile natively
+            ctx.fillStyle = "#872917";
             ctx.fillRect(120, yBarPos, fillingPercentageWidth, barThicknessHeight);
 
-            // Append textual indicator labels natively
             ctx.fillStyle = "#24292f";
             ctx.font = "bold 13px -apple-system, sans-serif";
             ctx.textAlign = "right";
             ctx.fillText(mean.toFixed(mean > 10 ? 1 : 3), 100, yBarPos + 16);
 
-            // Draw mathematical Error Whisker brackets on top of horizontal grids
+            // Draw clean high-contrast black error whiskers explicitly
             if (uncertainty > 0 && mean > 0) {
-                const errorPixelWidth = (uncertainty / maxValueLimit) * graphWidth;
+                const errorPixelWidth = (uncertainty / calculatedMaxScale) * graphWidth;
                 const coreXCenterPos = 120 + fillingPercentageWidth;
 
-                ctx.strokeStyle = "#ea4335";
+                ctx.strokeStyle = "#000000";
                 ctx.lineWidth = 2;
 
-                // Central horizontal connection wire line segment
                 ctx.beginPath();
                 ctx.moveTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + barThicknessHeight / 2);
                 ctx.lineTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + barThicknessHeight / 2);
                 ctx.stroke();
 
-                // Left whisker edge bracket boundary cap
                 ctx.beginPath();
                 ctx.moveTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + 5);
                 ctx.lineTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + barThicknessHeight - 5);
                 ctx.stroke();
 
-                // Right whisker edge bracket boundary cap
                 ctx.beginPath();
                 ctx.moveTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + 5);
                 ctx.lineTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + barThicknessHeight - 5);
                 ctx.stroke();
             }
 
-            // Append custom bounds context descriptions indicator tags safely
             ctx.fillStyle = "#57606a";
             ctx.font = "11px -apple-system, sans-serif";
             ctx.textAlign = "left";
-            ctx.fillText(`±${uncertainty.toFixed(uncertainty > 10 ? 1 : 3)}`, 120 + fillingPercentageWidth + (uncertainty > 0 ? (uncertainty / maxValueLimit * graphWidth) + 8 : 8), yBarPos + 15);
+            ctx.fillText(`±${uncertainty.toFixed(uncertainty > 10 ? 1 : 3)}`, 120 + fillingPercentageWidth + (uncertainty > 0 ? (uncertainty / calculatedMaxScale * graphWidth) + 8 : 8), yBarPos + 15);
 
-            // Vertical constraint max bounds dynamic limits context indicator print mapping logic
             ctx.textAlign = "right";
-            ctx.fillText(`Max Scale: ${maxValueLimit}`, 120 + graphWidth, yBarPos - 6);
+            ctx.fillText(`Max Scale: ${calculatedMaxScale}`, 120 + graphWidth, yBarPos - 6);
         }
 
-        // Dynamic Filtering Core table registry interface matrix configuration trigger logic map
         function filterTable() {
             const searchText = document.getElementById('searchBox').value.toLowerCase();
             const selectedEnv = document.getElementById('typeFilter').value;
@@ -615,36 +611,19 @@
                 const matchesSearch = itemText.includes(searchText);
                 const matchesEnv = (selectedEnv === 'all' || item.field_or_lab === selectedEnv);
                 const matchesSector = (selectedSector === 'all' || item.sector === selectedSector);
-                
                 return matchesSearch && matchesEnv && matchesSector;
             });
-
             renderTableRows(filtered);
         }
 
         document.getElementById('searchBox').addEventListener('input', filterTable);
 
-        // Client-Side CSV Spreadsheet Generation Exporter Mechanism Engine
-        function exportToExcel() {
-            const sector = document.getElementById("sumSector").value;
-            const fuel = document.getElementById("sumFuel").value;
-            const device = document.getElementById("sumDevice").value;
-
-            const filteredTargets = globalCachedStudies.filter(item => {
-                return (sector === "all" || item.sector === sector) &&
-                       (fuel === "all" || item.fuel === fuel) &&
-                       (device === "all" || item.device === device);
-            });
-
-            if (filteredTargets.length === 0) {
-                alert("The targeted query does not contain records to bundle into a spreadsheet download container profile.");
-                return;
-            }
-
+        // Core compilation framework spreadsheet formatting engine helper
+        function generateCSVContent(studiesArray) {
             let csvContent = "data:text/csv;charset=utf-8,";
             csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Device,Region/Country,Environment,PM25 Value,PM25 Uncertainty,PM25 N,BC Value,BC Uncertainty,BC N,OC Value,OC Uncertainty,OC N,CO Value,CO Uncertainty,CO N,CO2 Value,CO2 Uncertainty,CO2 N\n";
 
-            filteredTargets.forEach(item => {
+            studiesArray.forEach(item => {
                 const rowsArray = [
                     `"${(item.study_title || '').replace(/"/g, '""')}"`,
                     `"${(item.authors || '').replace(/"/g, '""')}"`,
@@ -664,24 +643,50 @@
                 ];
                 csvContent += rowsArray.join(",") + "\n";
             });
+            return csvContent;
+        }
 
-            const encodingUri = encodeURI(csvContent);
+        function triggerDownload(content, filename) {
+            const encodingUri = encodeURI(content);
             const anchorToken = document.createElement("a");
             anchorToken.setAttribute("href", encodingUri);
-            anchorToken.setAttribute("download", `emissions_export_${sector}_${fuel}.csv`);
+            anchorToken.setAttribute("download", filename);
             document.body.appendChild(anchorToken);
             anchorToken.click();
             document.body.removeChild(anchorToken);
         }
 
-        // Keep horizontal canvas metrics dynamically scale crisp upon active resizing actions
-        window.addEventListener('resize', () => {
-            if(document.getElementById('summary-view').classList.contains('active')) {
-                onSummaryFilterChange();
+        // Exporter 1: Download full database snapshot directly from the Data Registry page
+        function exportDataViewToExcel() {
+            if (globalCachedStudies.length === 0) return;
+            const csv = generateCSVContent(globalCachedStudies);
+            triggerDownload(csv, "global_emissions_full_registry.csv");
+        }
+
+        // Exporter 2: Download isolated matrix snapshot from Summary tab workbench
+        function exportSummarySelectionToExcel() {
+            const sector = document.getElementById("sumSector").value;
+            const fuel = document.getElementById("sumFuel").value;
+            const device = document.getElementById("sumDevice").value;
+
+            const filteredTargets = globalCachedStudies.filter(item => {
+                return (sector === "all" || item.sector === sector) &&
+                       (fuel === "all" || item.fuel === fuel) &&
+                       (device === "all" || item.device === device);
+            });
+
+            if (filteredTargets.length === 0) {
+                alert("The current configuration contains 0 matching rows to export.");
+                return;
             }
+            const csv = generateCSVContent(filteredTargets);
+            triggerDownload(csv, `summary_selection_export_${sector}.csv`);
+        }
+
+        window.addEventListener('resize', () => {
+            if(document.getElementById('summary-view').classList.contains('active')) onSummaryFilterChange();
         });
 
-        // Run initialization scripts on system launch
         fetchAboutSection();
         fetchDatabase();
     </script>
