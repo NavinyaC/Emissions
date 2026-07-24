@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Emissions Database Portal V4</title>
+    <title>Global Emissions Database Portal</title>
     <style>
         :root {
             --primary: #872917;
@@ -256,6 +256,12 @@
                         </select>
                     </div>
                     <div class="filter-group">
+                        <label for="sumSubSector">Sub-Sector Target</label>
+                        <select id="sumSubSector" class="filter-select" style="width:100%;" onchange="onSubSectorCascadeChange()">
+                            <option value="all">Select a Sub-Sector...</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
                         <label for="sumFuel">Fuel Target</label>
                         <select id="sumFuel" class="filter-select" style="width:100%;" onchange="onFuelCascadeChange()">
                             <option value="all">Select a Fuel...</option>
@@ -273,7 +279,7 @@
 
                 <div class="charts-stack" id="chartsStackContainer">
                     <div class="chart-placeholder" id="initialQueryPlaceholder">
-                        📊 Please select a specific Sector, Fuel, and Device combination in the configuration bench to calculate weighted averages and execute dynamic plot trends.
+                        📊 Please select a specific Sector, Sub-Sector, Fuel, and Device combination in the configuration bench to calculate weighted averages and execute dynamic plot trends.
                     </div>
                     
                     <!-- Hidden Core Structure Cards to render exclusively upon query completion -->
@@ -443,20 +449,43 @@
                 sumSector.innerHTML += `<option value="${s}">${s}</option>`;
             });
 
-            rebuildCascadeFuels(true);
+            rebuildCascadeSubSectors(true);
         }
 
-        function onSectorCascadeChange() { rebuildCascadeFuels(false); }
+        function onSectorCascadeChange() { rebuildCascadeSubSectors(false); }
+        function onSubSectorCascadeChange() { rebuildCascadeFuels(false); }
         function onFuelCascadeChange() { rebuildCascadeDevices(false); }
 
-        function rebuildCascadeFuels(isInitialStartup = false) {
+        // Cascade Step 1: Rebuild dynamic Sub-Sectors list based on selected Sector
+        function rebuildCascadeSubSectors(isInitialStartup = false) {
             const selectedSector = document.getElementById("sumSector").value;
-            const targetFuels = new Set();
+            const targetSubSectors = new Set();
 
             globalCachedStudies.forEach(item => {
                 if (isInitialStartup || selectedSector === "all" || item.sector === selectedSector) {
-                    if (item.fuel) targetFuels.add(item.fuel);
+                    if (item.sub_sector) targetSubSectors.add(item.sub_sector);
                 }
+            });
+
+            const sumSubSector = document.getElementById("sumSubSector");
+            sumSubSector.innerHTML = '<option value="all">Select a Sub-Sector...</option>';
+            Array.from(targetSubSectors).sort().forEach(ss => {
+                sumSubSector.innerHTML += `<option value="${ss}">${ss}</option>`;
+            });
+
+            rebuildCascadeFuels(isInitialStartup);
+        }
+
+        // Cascade Step 2: Rebuild dynamic Fuels list based on selected Sector + Sub-Sector
+        function rebuildCascadeFuels(isInitialStartup = false) {
+            const selectedSector = document.getElementById("sumSector").value;
+            const selectedSubSector = document.getElementById("sumSubSector").value;
+            const targetFuels = new Set();
+
+            globalCachedStudies.forEach(item => {
+                const matchSector = (isInitialStartup || selectedSector === "all" || item.sector === selectedSector);
+                const matchSubSector = (isInitialStartup || selectedSubSector === "all" || item.sub_sector === selectedSubSector);
+                if (matchSector && matchSubSector && item.fuel) targetFuels.add(item.fuel);
             });
 
             const sumFuel = document.getElementById("sumFuel");
@@ -468,15 +497,18 @@
             rebuildCascadeDevices(isInitialStartup);
         }
 
+        // Cascade Step 3: Rebuild dynamic Devices list based on selected Sector + Sub-Sector + Fuel
         function rebuildCascadeDevices(isInitialStartup = false) {
             const selectedSector = document.getElementById("sumSector").value;
+            const selectedSubSector = document.getElementById("sumSubSector").value;
             const selectedFuel = document.getElementById("sumFuel").value;
             const targetDevices = new Set();
 
             globalCachedStudies.forEach(item => {
                 const matchSector = (isInitialStartup || selectedSector === "all" || item.sector === selectedSector);
+                const matchSubSector = (isInitialStartup || selectedSubSector === "all" || item.sub_sector === selectedSubSector);
                 const matchFuel = (selectedFuel === "all" || item.fuel === selectedFuel);
-                if (matchSector && matchFuel && item.device) targetDevices.add(item.device);
+                if (matchSector && matchSubSector && matchFuel && item.device) targetDevices.add(item.device);
             });
 
             const sumDevice = document.getElementById("sumDevice");
@@ -502,13 +534,14 @@
 
         function onSummaryFilterChange() {
             const sector = document.getElementById("sumSector").value;
+            const subSector = document.getElementById("sumSubSector").value;
             const fuel = document.getElementById("sumFuel").value;
             const device = document.getElementById("sumDevice").value;
 
             const placeholder = document.getElementById("initialQueryPlaceholder");
             const graphCards = document.querySelectorAll(".calculation-graph-card");
 
-            if((sector === "all" || sector === "") && (fuel === "all" || fuel === "") && (device === "all" || device === "")) {
+            if((sector === "all" || sector === "") && (subSector === "all" || subSector === "") && (fuel === "all" || fuel === "") && (device === "all" || device === "")) {
                 placeholder.style.display = "block";
                 graphCards.forEach(card => card.style.display = "none");
                 document.getElementById("sampleCountDisplay").textContent = "Entries Matched: 0";
@@ -520,6 +553,7 @@
 
             const targets = globalCachedStudies.filter(item => {
                 return (sector === "all" || item.sector === sector) &&
+                       (subSector === "all" || item.sub_sector === subSector) &&
                        (fuel === "all" || item.fuel === fuel) &&
                        (device === "all" || item.device === device);
             });
@@ -706,11 +740,13 @@
 
         function exportSummarySelectionToExcel() {
             const sector = document.getElementById("sumSector").value;
+            const subSector = document.getElementById("sumSubSector").value;
             const fuel = document.getElementById("sumFuel").value;
             const device = document.getElementById("sumDevice").value;
 
             const filteredTargets = globalCachedStudies.filter(item => {
                 return (sector === "all" || item.sector === sector) &&
+                       (subSector === "all" || item.sub_sector === subSector) &&
                        (fuel === "all" || item.fuel === fuel) &&
                        (device === "all" || item.device === device);
             });
