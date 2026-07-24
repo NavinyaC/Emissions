@@ -180,7 +180,7 @@
                 <div class="loading">Loading developer infrastructure data...</div>
             </div>
 
-            <!-- Grammatically Corrected Submission Block -->
+            <!-- Submission Block -->
             <div class="submission-links">
                 <p>💡 <strong>Data Contribution & Curation Protocol:</strong></p>
                 <span>Please use the following links to report new data, request data updates, or flag issues in the data:</span>
@@ -475,13 +475,11 @@
             onSummaryFilterChange();
         }
 
-        // Dynamic Mathematical Ceiling Round-up Function
         function getDynamicNearestCeiling(value) {
             if (value <= 0) return 1;
             const logBase10 = Math.floor(Math.log10(value));
             const magnitudeUnit = Math.pow(10, logBase10);
             
-            // Establish localized step limits based on the magnitude unit
             let step = magnitudeUnit / 2;
             if (logBase10 >= 1) step = magnitudeUnit / 2; 
             if (logBase10 >= 2) step = magnitudeUnit / 4; 
@@ -525,7 +523,6 @@
                 const finalMean = sumTotalSamples > 0 ? (sumWeightValues / sumTotalSamples) : 0;
                 const finalUncertainty = sumTotalSamples > 0 ? (Math.sqrt(sumSquareUncertaintySamples) / sumTotalSamples) : 0;
 
-                // Calculate the dynamic ceiling rule: mean + uncertainty rounded up cleanly
                 const requiredMaxExtent = finalMean + finalUncertainty;
                 const calculatedMaxScale = finalMean > 0 ? getDynamicNearestCeiling(requiredMaxExtent) : 10;
 
@@ -559,7 +556,6 @@
             ctx.lineTo(120 + graphWidth, yBarPos + barThicknessHeight);
             ctx.stroke();
 
-            // Set custom hex colors matching requested profile natively
             ctx.fillStyle = "#872917";
             ctx.fillRect(120, yBarPos, fillingPercentageWidth, barThicknessHeight);
 
@@ -568,7 +564,6 @@
             ctx.textAlign = "right";
             ctx.fillText(mean.toFixed(mean > 10 ? 1 : 3), 100, yBarPos + 16);
 
-            // Draw clean high-contrast black error whiskers explicitly
             if (uncertainty > 0 && mean > 0) {
                 const errorPixelWidth = (uncertainty / calculatedMaxScale) * graphWidth;
                 const coreXCenterPos = 120 + fillingPercentageWidth;
@@ -618,12 +613,28 @@
 
         document.getElementById('searchBox').addEventListener('input', filterTable);
 
-        // Core compilation framework spreadsheet formatting engine helper
+        // Helper function to dynamically parse and split values from units
+        function parseValueAndUnit(rawStr) {
+            if (!rawStr && rawStr !== 0) return { value: "", unit: "" };
+            const cleanStr = String(rawStr).trim();
+            const valMatch = cleanStr.match(/^[\d\.]+/);
+            if (!valMatch) return { value: "", unit: cleanStr };
+            
+            const value = valMatch[0];
+            const unit = cleanStr.replace(value, "").trim();
+            return { value, unit };
+        }
+
+        // CSV Compilation Engine providing clean alphabetic-free metrics and a custom Unit column
         function generateCSVContent(studiesArray) {
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Device,Region/Country,Environment,PM25 Value,PM25 Uncertainty,PM25 N,BC Value,BC Uncertainty,BC N,OC Value,OC Uncertainty,OC N,CO Value,CO Uncertainty,CO N,CO2 Value,CO2 Uncertainty,CO2 N\n";
+            csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Device,Region/Country,Environment,Unit Column,PM25 Value,PM25 Uncertainty,PM25 N,BC Value,BC Uncertainty,BC N,OC Value,OC Uncertainty,OC N,CO Value,CO Uncertainty,CO N,CO2 Value,CO2 Uncertainty,CO2 N\n";
 
             studiesArray.forEach(item => {
+                // Read a sample metric to determine the standard environmental unit label safely
+                const parsedUnitObj = parseValueAndUnit(item.ef_pm25 || item.ef_bc || item.ef_oc || item.ef_co || item.ef_co2);
+                const standardUnit = parsedUnitObj.unit;
+
                 const rowsArray = [
                     `"${(item.study_title || '').replace(/"/g, '""')}"`,
                     `"${(item.authors || '').replace(/"/g, '""')}"`,
@@ -635,11 +646,14 @@
                     `"${item.device || ''}"`,
                     `"${item.region_country || ''}"`,
                     `"${item.field_or_lab || ''}"`,
-                    `"${item.ef_pm25 || ''}"`, `"${item.un_pm25 || ''}"`, `"${item.n_pm25 || ''}"`,
-                    `"${item.ef_bc || ''}"`, `"${item.un_bc || ''}"`, `"${item.n_bc || ''}"`,
-                    `"${item.ef_oc || ''}"`, `"${item.un_oc || ''}"`, `"${item.n_oc || ''}"`,
-                    `"${item.ef_co || ''}"`, `"${item.un_co || ''}"`, `"${item.n_co || ''}"`,
-                    `"${item.ef_co2 || ''}"`, `"${item.un_co2 || ''}"`, `"${item.n_co2 || ''}"`
+                    `"${standardUnit}"`, // Dedicated standalone units column
+                    
+                    // Values are dynamically stripped of any alphabetic text sequences securely
+                    `"${parseValueAndUnit(item.ef_pm25).value}"`, `"${(item.un_pm25 || '')}"`, `"${(item.n_pm25 || '')}"`,
+                    `"${parseValueAndUnit(item.ef_bc).value}"`, `"${(item.un_bc || '')}"`, `"${(item.n_bc || '')}"`,
+                    `"${parseValueAndUnit(item.ef_oc).value}"`, `"${(item.un_oc || '')}"`, `"${(item.n_oc || '')}"`,
+                    `"${parseValueAndUnit(item.ef_co).value}"`, `"${(item.un_co || '')}"`, `"${(item.n_co || '')}"`,
+                    `"${parseValueAndUnit(item.ef_co2).value}"`, `"${(item.un_co2 || '')}"`, `"${(item.n_co2 || '')}"`
                 ];
                 csvContent += rowsArray.join(",") + "\n";
             });
@@ -656,14 +670,12 @@
             document.body.removeChild(anchorToken);
         }
 
-        // Exporter 1: Download full database snapshot directly from the Data Registry page
         function exportDataViewToExcel() {
             if (globalCachedStudies.length === 0) return;
             const csv = generateCSVContent(globalCachedStudies);
             triggerDownload(csv, "global_emissions_full_registry.csv");
         }
 
-        // Exporter 2: Download isolated matrix snapshot from Summary tab workbench
         function exportSummarySelectionToExcel() {
             const sector = document.getElementById("sumSector").value;
             const fuel = document.getElementById("sumFuel").value;
