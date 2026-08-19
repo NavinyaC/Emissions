@@ -146,13 +146,29 @@
         .btn-download { display: block; width: 100%; text-align: center; background-color: #24292f; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 20px; text-decoration: none; box-sizing: border-box; }
         .btn-download:hover { background-color: #1f2328; }
         
-        /* Multi-Chart Matrix Styles */
-        .charts-stack { display: flex; flex-direction: column; gap: 20px; }
+        /* Box Plot Card & Canvas Styling */
         .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .chart-container { position: relative; width: 100%; height: 110px; }
-        canvas { width: 100% !important; height: 110px !important; }
+        .chart-container { position: relative; width: 100%; height: 420px; }
+        canvas { width: 100% !important; height: 420px !important; }
         .chart-placeholder { padding: 40px; text-align: center; color: #57606a; font-style: italic; border: 1px dashed var(--border); border-radius: 6px; background: #fafbfc; }
+
+        /* Floating Tooltip */
+        #chartTooltip {
+            position: absolute;
+            display: none;
+            background: rgba(36, 41, 47, 0.95);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            line-height: 1.4;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            max-width: 280px;
+        }
+        #chartTooltip strong { color: #58a6ff; }
     </style>
 </head>
 <body>
@@ -160,7 +176,7 @@
     <!-- Header Navigation Frame -->
     <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-brand">Emission Factors Portal</div>
+            <div class="nav-brand">Emissions Portal</div>
             <div class="nav-links">
                 <a class="nav-link active" onclick="switchTab('about')">About</a>
                 <a class="nav-link" onclick="switchTab('data')">Data</a>
@@ -168,6 +184,9 @@
             </div>
         </div>
     </nav>
+
+    <!-- Floating Tooltip Container -->
+    <div id="chartTooltip"></div>
 
     <!-- 1. HOME / ABOUT PAGE VIEW -->
     <div id="about-view" class="page-view active">
@@ -243,7 +262,7 @@
         <div class="container">
             <div class="header">
                 <h1>Data Summary Insights</h1>
-                <p class="subtitle">Compute isolated statistics and visualize relative ranges for distinct tracking parameters.</p>
+                <p class="subtitle">Statistical distribution and individual study scatter points per emission species.</p>
             </div>
             
             <div class="summary-layout">
@@ -279,29 +298,18 @@
 
                 <div class="charts-stack" id="chartsStackContainer">
                     <div class="chart-placeholder" id="initialQueryPlaceholder">
-                        📊 Please select a specific Sector, Sub-Sector, Fuel, and Device combination in the configuration bench to calculate weighted averages and execute dynamic plot trends.
+                        📊 Please select a Sector, Sub-Sector, Fuel, or Device combination in the configuration bench to visualize the distribution box plot.
                     </div>
                     
-                    <!-- Hidden Core Structure Cards to render exclusively upon query completion -->
                     <div class="chart-card calculation-graph-card" style="display:none;">
-                        <div class="chart-header"><strong>PM<sub>2.5</sub> Emission Factor Mean</strong><small class="sub-value" id="label-pm25">g/kg</small></div>
-                        <div class="chart-container"><canvas id="chart-pm25"></canvas></div>
-                    </div>
-                    <div class="chart-card calculation-graph-card" style="display:none;">
-                        <div class="chart-header"><strong>Black Carbon (BC) EF Mean</strong><small class="sub-value" id="label-bc">g/kg</small></div>
-                        <div class="chart-container"><canvas id="chart-bc"></canvas></div>
-                    </div>
-                    <div class="chart-card calculation-graph-card" style="display:none;">
-                        <div class="chart-header"><strong>Organic Carbon (OC) EF Mean</strong><small class="sub-value" id="label-oc">g/kg</small></div>
-                        <div class="chart-container"><canvas id="chart-oc"></canvas></div>
-                    </div>
-                    <div class="chart-card calculation-graph-card" style="display:none;">
-                        <div class="chart-header"><strong>Carbon Monoxide (CO) EF Mean</strong><small class="sub-value" id="label-co">g/kg</small></div>
-                        <div class="chart-container"><canvas id="chart-co"></canvas></div>
-                    </div>
-                    <div class="chart-card calculation-graph-card" style="display:none;">
-                        <div class="chart-header"><strong>Carbon Dioxide (CO<sub>2</sub>) EF Mean</strong><small class="sub-value" id="label-co2">g/kg</small></div>
-                        <div class="chart-container"><canvas id="chart-co2"></canvas></div>
+                        <div class="chart-header">
+                            <strong>Emission Factor Distribution & Studies</strong>
+                            <div style="display: flex; gap: 15px; font-size: 12px;">
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlotCanvas"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -309,7 +317,6 @@
     </div>
 
     <script>
-        // Tab Router Routing Mechanism
         function switchTab(tabId) {
             document.querySelectorAll('.page-view').forEach(view => view.classList.remove('active'));
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
@@ -329,6 +336,7 @@
         const studiesApiUrl = `https://api.github.com/repos/${repoOwner}/Emissions/contents/data/studies`;
 
         let globalCachedStudies = [];
+        let activeInteractivePoints = [];
 
         async function fetchAboutSection() {
             const container = document.getElementById("teamContainer");
@@ -456,7 +464,6 @@
         function onSubSectorCascadeChange() { rebuildCascadeFuels(false); }
         function onFuelCascadeChange() { rebuildCascadeDevices(false); }
 
-        // Cascade Step 1: Rebuild dynamic Sub-Sectors list based on selected Sector
         function rebuildCascadeSubSectors(isInitialStartup = false) {
             const selectedSector = document.getElementById("sumSector").value;
             const targetSubSectors = new Set();
@@ -476,7 +483,6 @@
             rebuildCascadeFuels(isInitialStartup);
         }
 
-        // Cascade Step 2: Rebuild dynamic Fuels list based on selected Sector + Sub-Sector
         function rebuildCascadeFuels(isInitialStartup = false) {
             const selectedSector = document.getElementById("sumSector").value;
             const selectedSubSector = document.getElementById("sumSubSector").value;
@@ -497,7 +503,6 @@
             rebuildCascadeDevices(isInitialStartup);
         }
 
-        // Cascade Step 3: Rebuild dynamic Devices list based on selected Sector + Sub-Sector + Fuel
         function rebuildCascadeDevices(isInitialStartup = false) {
             const selectedSector = document.getElementById("sumSector").value;
             const selectedSubSector = document.getElementById("sumSubSector").value;
@@ -520,16 +525,26 @@
             if (!isInitialStartup) onSummaryFilterChange();
         }
 
-        function getDynamicNearestCeiling(value) {
-            if (value <= 0) return 1;
-            const logBase10 = Math.floor(Math.log10(value));
-            const magnitudeUnit = Math.pow(10, logBase10);
-            
-            let step = magnitudeUnit / 2;
-            if (logBase10 >= 1) step = magnitudeUnit / 2; 
-            if (logBase10 >= 2) step = magnitudeUnit / 4; 
-
-            return Math.ceil(value / step) * step;
+        function calculateBoxPlotStats(arr) {
+            if (!arr || arr.length === 0) return null;
+            const sorted = [...arr].sort((a, b) => a - b);
+            const q = (p) => {
+                const pos = (sorted.length - 1) * p;
+                const base = Math.floor(pos);
+                const rest = pos - base;
+                if (sorted[base + 1] !== undefined) {
+                    return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+                } else {
+                    return sorted[base];
+                }
+            };
+            return {
+                min: sorted[0],
+                q1: q(0.25),
+                median: q(0.50),
+                q3: q(0.75),
+                max: sorted[sorted.length - 1]
+            };
         }
 
         function onSummaryFilterChange() {
@@ -541,7 +556,7 @@
             const placeholder = document.getElementById("initialQueryPlaceholder");
             const graphCards = document.querySelectorAll(".calculation-graph-card");
 
-            if((sector === "all" || sector === "") && (subSector === "all" || subSector === "") && (fuel === "all" || fuel === "") && (device === "all" || device === "")) {
+            if ((sector === "all" || sector === "") && (subSector === "all" || subSector === "") && (fuel === "all" || fuel === "") && (device === "all" || device === "")) {
                 placeholder.style.display = "block";
                 graphCards.forEach(card => card.style.display = "none");
                 document.getElementById("sampleCountDisplay").textContent = "Entries Matched: 0";
@@ -560,102 +575,212 @@
 
             document.getElementById("sampleCountDisplay").textContent = `Entries Matched: ${targets.length}`;
 
-            const metrics = ["pm25", "bc", "oc", "co", "co2"];
-            
-            metrics.forEach(m => {
-                let sumWeightValues = 0;
-                let sumTotalSamples = 0;
-                let sumSquareUncertaintySamples = 0;
-
-                targets.forEach(item => {
-                    const rawVal = item[`ef_${m}`];
-                    const val = rawVal ? parseFloat(rawVal) : NaN;
-                    const un = item[`un_${m}`] ? parseFloat(item[`un_${m}`]) : 0;
-                    const n = item[`n_${m}`] ? parseInt(item[`n_${m}`]) : 1;
-
-                    if (!isNaN(val)) {
-                        sumWeightValues += val * n;
-                        sumTotalSamples += n;
-                        sumSquareUncertaintySamples += Math.pow(un * n, 2);
-                    }
-                });
-
-                const finalMean = sumTotalSamples > 0 ? (sumWeightValues / sumTotalSamples) : 0;
-                const finalUncertainty = sumTotalSamples > 0 ? (Math.sqrt(sumSquareUncertaintySamples) / sumTotalSamples) : 0;
-
-                const requiredMaxExtent = finalMean + finalUncertainty;
-                const calculatedMaxScale = finalMean > 0 ? getDynamicNearestCeiling(requiredMaxExtent) : 10;
-
-                renderSpeciesHorizontalBar(m, finalMean, finalUncertainty, calculatedMaxScale);
-            });
+            renderCategoricalBoxPlot(targets);
         }
 
-        function renderSpeciesHorizontalBar(metricId, mean, uncertainty, calculatedMaxScale) {
-            const canvas = document.getElementById(`chart-${metricId}`);
+        function renderCategoricalBoxPlot(dataset) {
+            const canvas = document.getElementById('boxPlotCanvas');
             if(!canvas) return;
-            const ctx = canvas.getContext("2d");
+            const ctx = canvas.getContext('2d');
             
             const rect = canvas.parentNode.getBoundingClientRect();
             canvas.width = rect.width * 2;
-            canvas.height = 70 * 2;
+            canvas.height = 420 * 2;
             canvas.style.width = `${rect.width}px`;
-            canvas.style.height = `70px`;
+            canvas.style.height = `420px`;
             ctx.scale(2, 2);
 
-            ctx.clearRect(0, 0, rect.width, 70);
+            ctx.clearRect(0, 0, rect.width, 420);
+            activeInteractivePoints = [];
 
-            const graphWidth = rect.width - 120 - 40; 
-            const fillingPercentageWidth = Math.min(1, mean / calculatedMaxScale) * graphWidth;
-            
-            const yBarPos = 25;
-            const barThicknessHeight = 22;
+            const speciesKeys = [
+                { key: 'pm25', label: 'PM2.5' },
+                { key: 'bc', label: 'BC' },
+                { key: 'oc', label: 'OC' },
+                { key: 'co', label: 'CO' },
+                { key: 'co2', label: 'CO2' }
+            ];
 
-            ctx.strokeStyle = "#e1e4e8";
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(120, yBarPos + barThicknessHeight);
-            ctx.lineTo(120 + graphWidth, yBarPos + barThicknessHeight);
-            ctx.stroke();
+            const padding = { top: 30, right: 30, bottom: 50, left: 60 };
+            const plotWidth = rect.width - padding.left - padding.right;
+            const plotHeight = 420 - padding.top - padding.bottom;
 
-            ctx.fillStyle = "#872917";
-            ctx.fillRect(120, yBarPos, fillingPercentageWidth, barThicknessHeight);
+            let allValues = [];
+            speciesKeys.forEach(sp => {
+                dataset.forEach(d => {
+                    const v = parseFloat(d[`ef_${sp.key}`]);
+                    if (!isNaN(v)) allValues.push(v);
+                });
+            });
 
-            ctx.fillStyle = "#24292f";
-            ctx.font = "bold 13px -apple-system, sans-serif";
-            ctx.textAlign = "right";
-            ctx.fillText(mean.toFixed(mean > 10 ? 1 : 3), 100, yBarPos + 16);
+            if (allValues.length === 0) allValues = [0, 10];
+            const maxVal = Math.max(...allValues) * 1.15 || 10;
+            const minVal = Math.min(0, Math.min(...allValues));
 
-            if (uncertainty > 0 && mean > 0) {
-                const errorPixelWidth = (uncertainty / calculatedMaxScale) * graphWidth;
-                const coreXCenterPos = 120 + fillingPercentageWidth;
+            const yScale = (val) => padding.top + plotHeight - ((val - minVal) / (maxVal - minVal)) * plotHeight;
 
-                ctx.strokeStyle = "#000000";
-                ctx.lineWidth = 2;
+            // Render Axis & Outer Border Box
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(padding.left, padding.top, plotWidth, plotHeight);
 
+            // Render Y-Axis Ticks & Labels
+            ctx.fillStyle = '#000000';
+            ctx.font = '12px -apple-system, sans-serif';
+            ctx.textAlign = 'right';
+            const yTicks = 5;
+            for (let i = 0; i <= yTicks; i++) {
+                const tickVal = minVal + (i / yTicks) * (maxVal - minVal);
+                const yPos = yScale(tickVal);
                 ctx.beginPath();
-                ctx.moveTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + barThicknessHeight / 2);
-                ctx.lineTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + barThicknessHeight / 2);
+                ctx.moveTo(padding.left, yPos);
+                ctx.lineTo(padding.left + 5, yPos);
                 ctx.stroke();
-
-                ctx.beginPath();
-                ctx.moveTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + 5);
-                ctx.lineTo(Math.max(120, coreXCenterPos - errorPixelWidth), yBarPos + barThicknessHeight - 5);
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.moveTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + 5);
-                ctx.lineTo(Math.min(120 + graphWidth, coreXCenterPos + errorPixelWidth), yBarPos + barThicknessHeight - 5);
-                ctx.stroke();
+                ctx.fillText(tickVal.toFixed(tickVal > 10 ? 0 : 1), padding.left - 8, yPos + 4);
             }
 
-            ctx.fillStyle = "#57606a";
-            ctx.font = "11px -apple-system, sans-serif";
-            ctx.textAlign = "left";
-            ctx.fillText(`±${uncertainty.toFixed(uncertainty > 10 ? 1 : 3)}`, 120 + fillingPercentageWidth + (uncertainty > 0 ? (uncertainty / calculatedMaxScale * graphWidth) + 8 : 8), yBarPos + 15);
+            // Y-Axis Title
+            ctx.save();
+            ctx.translate(18, padding.top + plotHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center';
+            ctx.font = 'bold 13px -apple-system, sans-serif';
+            ctx.fillText('Emission Factor (g/kg)', 0, 0);
+            ctx.restore();
 
-            ctx.textAlign = "right";
-            ctx.fillText(`Max Scale: ${calculatedMaxScale}`, 120 + graphWidth, yBarPos - 6);
+            const groupWidth = plotWidth / speciesKeys.length;
+
+            speciesKeys.forEach((sp, idx) => {
+                const groupCenterX = padding.left + idx * groupWidth + groupWidth / 2;
+
+                // X-Axis Category Labels
+                ctx.fillStyle = '#000000';
+                ctx.textAlign = 'center';
+                ctx.font = 'bold 13px -apple-system, sans-serif';
+                ctx.fillText(sp.label, groupCenterX, padding.top + plotHeight + 25);
+
+                const environments = [
+                    { type: 'Lab', color: '#f7cbe8', pointColor: 'rgba(235, 95, 195, 0.7)', strokeColor: '#d63384', offset: -16 },
+                    { type: 'Field', color: '#dcb49a', pointColor: 'rgba(180, 95, 45, 0.75)', strokeColor: '#a0522d', offset: 16 }
+                ];
+
+                environments.forEach(env => {
+                    const subset = dataset.filter(d => {
+                        const envMatches = (d.field_or_lab || '').toLowerCase().includes(env.type.toLowerCase());
+                        const v = parseFloat(d[`ef_${sp.key}`]);
+                        return envMatches && !isNaN(v);
+                    });
+
+                    const values = subset.map(d => parseFloat(d[`ef_${sp.key}`]));
+                    const stats = calculateBoxPlotStats(values);
+                    const boxCenterX = groupCenterX + env.offset;
+                    const boxWidth = 26;
+
+                    if (stats && values.length > 0) {
+                        const yMin = yScale(stats.min);
+                        const yQ1 = yScale(stats.q1);
+                        const yMed = yScale(stats.median);
+                        const yQ3 = yScale(stats.q3);
+                        const yMax = yScale(stats.max);
+
+                        // Vertical Whiskers
+                        ctx.strokeStyle = '#000000';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(boxCenterX, yQ3);
+                        ctx.lineTo(boxCenterX, yMax);
+                        ctx.moveTo(boxCenterX, yQ1);
+                        ctx.lineTo(boxCenterX, yMin);
+                        ctx.stroke();
+
+                        // Whisker Caps
+                        const capWidth = 14;
+                        ctx.beginPath();
+                        ctx.moveTo(boxCenterX - capWidth / 2, yMax);
+                        ctx.lineTo(boxCenterX + capWidth / 2, yMax);
+                        ctx.moveTo(boxCenterX - capWidth / 2, yMin);
+                        ctx.lineTo(boxCenterX + capWidth / 2, yMin);
+                        ctx.stroke();
+
+                        // Box Body
+                        ctx.fillStyle = env.color;
+                        ctx.fillRect(boxCenterX - boxWidth / 2, yQ3, boxWidth, yQ1 - yQ3);
+                        ctx.strokeRect(boxCenterX - boxWidth / 2, yQ3, boxWidth, yQ1 - yQ3);
+
+                        // Median Line
+                        ctx.beginPath();
+                        ctx.moveTo(boxCenterX - boxWidth / 2, yMed);
+                        ctx.lineTo(boxCenterX + boxWidth / 2, yMed);
+                        ctx.stroke();
+                    }
+
+                    // Individual Scatter Points Overlaid with Jitter & Tooltip Tracking
+                    subset.forEach((d, pointIdx) => {
+                        const v = parseFloat(d[`ef_${sp.key}`]);
+                        const py = yScale(v);
+                        
+                        // Seeded pseudo-jitter
+                        const pseudoJitter = ((pointIdx * 17) % 18) - 9;
+                        const px = boxCenterX + pseudoJitter;
+
+                        ctx.fillStyle = env.pointColor;
+                        ctx.strokeStyle = env.strokeColor;
+                        ctx.lineWidth = 1;
+
+                        ctx.beginPath();
+                        ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+
+                        activeInteractivePoints.push({
+                            x: px,
+                            y: py,
+                            radius: 6,
+                            study_title: d.study_title,
+                            authors: d.authors,
+                            year: d.year_publication,
+                            value: v,
+                            uncertainty: d[`un_${sp.key}`],
+                            env: d.field_or_lab,
+                            species: sp.label
+                        });
+                    });
+                });
+            });
         }
+
+        // Hover Event Tracking for Tooltips
+        const canvasElement = document.getElementById('boxPlotCanvas');
+        const tooltip = document.getElementById('chartTooltip');
+
+        canvasElement.addEventListener('mousemove', (e) => {
+            const rect = canvasElement.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const hoveredPoint = activeInteractivePoints.find(pt => {
+                const dist = Math.hypot(pt.x - mouseX, pt.y - mouseY);
+                return dist <= pt.radius;
+            });
+
+            if (hoveredPoint) {
+                tooltip.style.display = 'block';
+                tooltip.style.left = `${e.pageX + 12}px`;
+                tooltip.style.top = `${e.pageY + 12}px`;
+                tooltip.innerHTML = `
+                    <strong>${hoveredPoint.study_title || 'Study Entry'}</strong><br>
+                    <span><strong>Authors:</strong> ${hoveredPoint.authors || 'Unknown'} (${hoveredPoint.year || 'N/A'})</span><br>
+                    <span><strong>${hoveredPoint.species} EF:</strong> ${hoveredPoint.value} ${hoveredPoint.uncertainty ? '± ' + hoveredPoint.uncertainty : ''}</span><br>
+                    <span><strong>Environment:</strong> ${hoveredPoint.env || 'N/A'}</span>
+                `;
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+
+        canvasElement.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+        });
 
         function filterTable() {
             const searchText = document.getElementById('searchBox').value.toLowerCase();
