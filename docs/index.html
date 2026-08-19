@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Emissions Database Portal</title>
+    <title>The Emission Factor Portal</title>
     <style>
         :root {
             --primary: #872917;
@@ -122,6 +122,7 @@
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(135, 41, 23, 0.15); }
         .btn-action { background-color: var(--primary); color: white; border: none; padding: 10px 16px; font-weight: 600; font-size: 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
         .btn-action:hover { background-color: #6e1d13; }
+        .btn-action:disabled { background-color: #e1e4e8; color: #8c959f; cursor: not-allowed; }
         
         /* Data Grid Table Elements */
         .table-responsive { overflow-x: auto; }
@@ -146,11 +147,12 @@
         .btn-download { display: block; width: 100%; text-align: center; background-color: #24292f; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 20px; text-decoration: none; box-sizing: border-box; }
         .btn-download:hover { background-color: #1f2328; }
         
-        /* Box Plot Card & Canvas Styling */
+        /* 5-Species Box Plot Stack Layout */
+        .charts-stack { display: flex; flex-direction: column; gap: 25px; }
         .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .chart-container { position: relative; width: 100%; height: 420px; }
-        canvas { width: 100% !important; height: 420px !important; }
+        .chart-container { position: relative; width: 100%; height: 260px; }
+        canvas { width: 100% !important; height: 260px !important; }
         .chart-placeholder { padding: 40px; text-align: center; color: #57606a; font-style: italic; border: 1px dashed var(--border); border-radius: 6px; background: #fafbfc; }
 
         /* Floating Tooltip */
@@ -176,7 +178,7 @@
     <!-- Header Navigation Frame -->
     <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-brand">Emissions Portal</div>
+            <div class="nav-brand">The Emission Factor Portal</div>
             <div class="nav-links">
                 <a class="nav-link active" onclick="switchTab('about')">About</a>
                 <a class="nav-link" onclick="switchTab('data')">Data</a>
@@ -192,7 +194,7 @@
     <div id="about-view" class="page-view active">
         <div class="container">
             <div class="header">
-                <h1>About the Platform</h1>
+                <h1>The Emission Factor Portal</h1>
                 <p class="subtitle">An open-access dashboard dedicated to mapping regional emissions data and climate-relevant aerosol tracking metrics.</p>
             </div>
             <h3>Development Team</h3>
@@ -231,7 +233,7 @@
                 <select id="sectorFilter" class="filter-select" onchange="filterTable()">
                     <option value="all">All Sectors (Dynamic)</option>
                 </select>
-                <button class="btn-action" onclick="exportDataViewToExcel()">📥 Download Registry (.csv)</button>
+                <button class="btn-action" disabled title="Full registry download temporarily disabled">📥 Download Registry (Disabled)</button>
             </div>
 
             <div class="table-responsive">
@@ -292,24 +294,68 @@
                             <option value="all">Select a Device...</option>
                         </select>
                     </div>
-                    <button class="btn-download" onclick="exportSummarySelectionToExcel()">📥 Download Selection (.csv)</button>
+                    <button class="btn-download" onclick="exportSummarySelectionToExcel()">📥 Download Selected Data (.csv)</button>
                     <div style="font-size:12px; color:#57606a; margin-top:15px; text-align:center;" id="sampleCountDisplay">Entries Matched: 0</div>
                 </div>
 
                 <div class="charts-stack" id="chartsStackContainer">
                     <div class="chart-placeholder" id="initialQueryPlaceholder">
-                        📊 Please select a Sector, Sub-Sector, Fuel, or Device combination in the configuration bench to visualize the distribution box plot.
+                        📊 Please select a Sector, Sub-Sector, Fuel, or Device combination in the configuration bench to visualize the distribution box plots.
                     </div>
                     
                     <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header">
-                            <strong>Emission Factor Distribution & Studies</strong>
+                            <strong>PM<sub>2.5</sub> Emission Factor Distribution</strong>
                             <div style="display: flex; gap: 15px; font-size: 12px;">
                                 <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
                                 <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
                             </div>
                         </div>
-                        <div class="chart-container"><canvas id="boxPlotCanvas"></canvas></div>
+                        <div class="chart-container"><canvas id="boxPlot-pm25"></canvas></div>
+                    </div>
+
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Black Carbon (BC) Emission Factor Distribution</strong>
+                            <div style="display: flex; gap: 15px; font-size: 12px;">
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-bc"></canvas></div>
+                    </div>
+
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Organic Carbon (OC) Emission Factor Distribution</strong>
+                            <div style="display: flex; gap: 15px; font-size: 12px;">
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-oc"></canvas></div>
+                    </div>
+
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Carbon Monoxide (CO) Emission Factor Distribution</strong>
+                            <div style="display: flex; gap: 15px; font-size: 12px;">
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-co"></canvas></div>
+                    </div>
+
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Carbon Dioxide (CO<sub>2</sub>) Emission Factor Distribution</strong>
+                            <div style="display: flex; gap: 15px; font-size: 12px;">
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-co2"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -575,25 +621,8 @@
 
             document.getElementById("sampleCountDisplay").textContent = `Entries Matched: ${targets.length}`;
 
-            renderCategoricalBoxPlot(targets);
-        }
-
-        function renderCategoricalBoxPlot(dataset) {
-            const canvas = document.getElementById('boxPlotCanvas');
-            if(!canvas) return;
-            const ctx = canvas.getContext('2d');
-            
-            const rect = canvas.parentNode.getBoundingClientRect();
-            canvas.width = rect.width * 2;
-            canvas.height = 420 * 2;
-            canvas.style.width = `${rect.width}px`;
-            canvas.style.height = `420px`;
-            ctx.scale(2, 2);
-
-            ctx.clearRect(0, 0, rect.width, 420);
             activeInteractivePoints = [];
-
-            const speciesKeys = [
+            const speciesList = [
                 { key: 'pm25', label: 'PM2.5' },
                 { key: 'bc', label: 'BC' },
                 { key: 'oc', label: 'OC' },
@@ -601,16 +630,33 @@
                 { key: 'co2', label: 'CO2' }
             ];
 
-            const padding = { top: 30, right: 30, bottom: 50, left: 60 };
+            speciesList.forEach(sp => {
+                renderSingleSpeciesBoxPlot(sp.key, sp.label, targets);
+            });
+        }
+
+        function renderSingleSpeciesBoxPlot(speciesKey, speciesLabel, dataset) {
+            const canvas = document.getElementById(`boxPlot-${speciesKey}`);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            const rect = canvas.parentNode.getBoundingClientRect();
+            canvas.width = rect.width * 2;
+            canvas.height = 260 * 2;
+            canvas.style.width = `${rect.width}px`;
+            canvas.style.height = `260px`;
+            ctx.scale(2, 2);
+
+            ctx.clearRect(0, 0, rect.width, 260);
+
+            const padding = { top: 25, right: 30, bottom: 40, left: 65 };
             const plotWidth = rect.width - padding.left - padding.right;
-            const plotHeight = 420 - padding.top - padding.bottom;
+            const plotHeight = 260 - padding.top - padding.bottom;
 
             let allValues = [];
-            speciesKeys.forEach(sp => {
-                dataset.forEach(d => {
-                    const v = parseFloat(d[`ef_${sp.key}`]);
-                    if (!isNaN(v)) allValues.push(v);
-                });
+            dataset.forEach(d => {
+                const v = parseFloat(d[`ef_${speciesKey}`]);
+                if (!isNaN(v)) allValues.push(v);
             });
 
             if (allValues.length === 0) allValues = [0, 10];
@@ -619,16 +665,16 @@
 
             const yScale = (val) => padding.top + plotHeight - ((val - minVal) / (maxVal - minVal)) * plotHeight;
 
-            // Render Axis & Outer Border Box
+            // Box Plot Outer Border
             ctx.strokeStyle = '#000000';
             ctx.lineWidth = 1.5;
             ctx.strokeRect(padding.left, padding.top, plotWidth, plotHeight);
 
-            // Render Y-Axis Ticks & Labels
+            // Y-Axis Ticks & Labels
             ctx.fillStyle = '#000000';
-            ctx.font = '12px -apple-system, sans-serif';
+            ctx.font = '11px -apple-system, sans-serif';
             ctx.textAlign = 'right';
-            const yTicks = 5;
+            const yTicks = 4;
             for (let i = 0; i <= yTicks; i++) {
                 const tickVal = minVal + (i / yTicks) * (maxVal - minVal);
                 const yPos = yScale(tickVal);
@@ -644,142 +690,140 @@
             ctx.translate(18, padding.top + plotHeight / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.textAlign = 'center';
-            ctx.font = 'bold 13px -apple-system, sans-serif';
-            ctx.fillText('Emission Factor (g/kg)', 0, 0);
+            ctx.font = 'bold 12px -apple-system, sans-serif';
+            ctx.fillText(`${speciesLabel} (g/kg)`, 0, 0);
             ctx.restore();
 
-            const groupWidth = plotWidth / speciesKeys.length;
+            const environments = [
+                { type: 'Lab', color: '#f7cbe8', pointColor: 'rgba(235, 95, 195, 0.75)', strokeColor: '#d63384', posX: padding.left + plotWidth * 0.33 },
+                { type: 'Field', color: '#dcb49a', pointColor: 'rgba(180, 95, 45, 0.8)', strokeColor: '#a0522d', posX: padding.left + plotWidth * 0.67 }
+            ];
 
-            speciesKeys.forEach((sp, idx) => {
-                const groupCenterX = padding.left + idx * groupWidth + groupWidth / 2;
+            environments.forEach(env => {
+                const subset = dataset.filter(d => {
+                    const envMatches = (d.field_or_lab || '').toLowerCase().includes(env.type.toLowerCase());
+                    const v = parseFloat(d[`ef_${speciesKey}`]);
+                    return envMatches && !isNaN(v);
+                });
 
-                // X-Axis Category Labels
+                const values = subset.map(d => parseFloat(d[`ef_${speciesKey}`]));
+                const stats = calculateBoxPlotStats(values);
+                const boxCenterX = env.posX;
+                const boxWidth = 50;
+
+                // X-Axis Category Sub-labels
                 ctx.fillStyle = '#000000';
                 ctx.textAlign = 'center';
-                ctx.font = 'bold 13px -apple-system, sans-serif';
-                ctx.fillText(sp.label, groupCenterX, padding.top + plotHeight + 25);
+                ctx.font = 'bold 12px -apple-system, sans-serif';
+                ctx.fillText(env.type, boxCenterX, padding.top + plotHeight + 22);
 
-                const environments = [
-                    { type: 'Lab', color: '#f7cbe8', pointColor: 'rgba(235, 95, 195, 0.7)', strokeColor: '#d63384', offset: -16 },
-                    { type: 'Field', color: '#dcb49a', pointColor: 'rgba(180, 95, 45, 0.75)', strokeColor: '#a0522d', offset: 16 }
-                ];
+                if (stats && values.length > 0) {
+                    const yMin = yScale(stats.min);
+                    const yQ1 = yScale(stats.q1);
+                    const yMed = yScale(stats.median);
+                    const yQ3 = yScale(stats.q3);
+                    const yMax = yScale(stats.max);
 
-                environments.forEach(env => {
-                    const subset = dataset.filter(d => {
-                        const envMatches = (d.field_or_lab || '').toLowerCase().includes(env.type.toLowerCase());
-                        const v = parseFloat(d[`ef_${sp.key}`]);
-                        return envMatches && !isNaN(v);
-                    });
+                    // Whiskers
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(boxCenterX, yQ3);
+                    ctx.lineTo(boxCenterX, yMax);
+                    ctx.moveTo(boxCenterX, yQ1);
+                    ctx.lineTo(boxCenterX, yMin);
+                    ctx.stroke();
 
-                    const values = subset.map(d => parseFloat(d[`ef_${sp.key}`]));
-                    const stats = calculateBoxPlotStats(values);
-                    const boxCenterX = groupCenterX + env.offset;
-                    const boxWidth = 26;
+                    // Whisker Caps
+                    const capWidth = 24;
+                    ctx.beginPath();
+                    ctx.moveTo(boxCenterX - capWidth / 2, yMax);
+                    ctx.lineTo(boxCenterX + capWidth / 2, yMax);
+                    ctx.moveTo(boxCenterX - capWidth / 2, yMin);
+                    ctx.lineTo(boxCenterX + capWidth / 2, yMin);
+                    ctx.stroke();
 
-                    if (stats && values.length > 0) {
-                        const yMin = yScale(stats.min);
-                        const yQ1 = yScale(stats.q1);
-                        const yMed = yScale(stats.median);
-                        const yQ3 = yScale(stats.q3);
-                        const yMax = yScale(stats.max);
+                    // Box Body
+                    ctx.fillStyle = env.color;
+                    ctx.fillRect(boxCenterX - boxWidth / 2, yQ3, boxWidth, yQ1 - yQ3);
+                    ctx.strokeRect(boxCenterX - boxWidth / 2, yQ3, boxWidth, yQ1 - yQ3);
 
-                        // Vertical Whiskers
-                        ctx.strokeStyle = '#000000';
-                        ctx.lineWidth = 2;
-                        ctx.beginPath();
-                        ctx.moveTo(boxCenterX, yQ3);
-                        ctx.lineTo(boxCenterX, yMax);
-                        ctx.moveTo(boxCenterX, yQ1);
-                        ctx.lineTo(boxCenterX, yMin);
-                        ctx.stroke();
+                    // Median Line
+                    ctx.beginPath();
+                    ctx.moveTo(boxCenterX - boxWidth / 2, yMed);
+                    ctx.lineTo(boxCenterX + boxWidth / 2, yMed);
+                    ctx.stroke();
+                }
 
-                        // Whisker Caps
-                        const capWidth = 14;
-                        ctx.beginPath();
-                        ctx.moveTo(boxCenterX - capWidth / 2, yMax);
-                        ctx.lineTo(boxCenterX + capWidth / 2, yMax);
-                        ctx.moveTo(boxCenterX - capWidth / 2, yMin);
-                        ctx.lineTo(boxCenterX + capWidth / 2, yMin);
-                        ctx.stroke();
+                // Scatter Points Overlaid with Jitter & Tooltip tracking
+                subset.forEach((d, pointIdx) => {
+                    const v = parseFloat(d[`ef_${speciesKey}`]);
+                    const py = yScale(v);
+                    const pseudoJitter = ((pointIdx * 19) % 28) - 14;
+                    const px = boxCenterX + pseudoJitter;
 
-                        // Box Body
-                        ctx.fillStyle = env.color;
-                        ctx.fillRect(boxCenterX - boxWidth / 2, yQ3, boxWidth, yQ1 - yQ3);
-                        ctx.strokeRect(boxCenterX - boxWidth / 2, yQ3, boxWidth, yQ1 - yQ3);
+                    ctx.fillStyle = env.pointColor;
+                    ctx.strokeStyle = env.strokeColor;
+                    ctx.lineWidth = 1;
 
-                        // Median Line
-                        ctx.beginPath();
-                        ctx.moveTo(boxCenterX - boxWidth / 2, yMed);
-                        ctx.lineTo(boxCenterX + boxWidth / 2, yMed);
-                        ctx.stroke();
-                    }
+                    ctx.beginPath();
+                    ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
 
-                    // Individual Scatter Points Overlaid with Jitter & Tooltip Tracking
-                    subset.forEach((d, pointIdx) => {
-                        const v = parseFloat(d[`ef_${sp.key}`]);
-                        const py = yScale(v);
-                        
-                        // Seeded pseudo-jitter
-                        const pseudoJitter = ((pointIdx * 17) % 18) - 9;
-                        const px = boxCenterX + pseudoJitter;
-
-                        ctx.fillStyle = env.pointColor;
-                        ctx.strokeStyle = env.strokeColor;
-                        ctx.lineWidth = 1;
-
-                        ctx.beginPath();
-                        ctx.arc(px, py, 4.5, 0, Math.PI * 2);
-                        ctx.fill();
-                        ctx.stroke();
-
-                        activeInteractivePoints.push({
-                            x: px,
-                            y: py,
-                            radius: 6,
-                            study_title: d.study_title,
-                            authors: d.authors,
-                            year: d.year_publication,
-                            value: v,
-                            uncertainty: d[`un_${sp.key}`],
-                            env: d.field_or_lab,
-                            species: sp.label
-                        });
+                    activeInteractivePoints.push({
+                        canvasId: `boxPlot-${speciesKey}`,
+                        x: px,
+                        y: py,
+                        radius: 6,
+                        study_title: d.study_title,
+                        authors: d.authors,
+                        year: d.year_publication,
+                        value: v,
+                        uncertainty: d[`un_${speciesKey}`],
+                        env: d.field_or_lab,
+                        species: speciesLabel
                     });
                 });
             });
         }
 
-        // Hover Event Tracking for Tooltips
-        const canvasElement = document.getElementById('boxPlotCanvas');
+        // Global Mouseover Listener across all 5 canvases for dynamic tooltips
         const tooltip = document.getElementById('chartTooltip');
 
-        canvasElement.addEventListener('mousemove', (e) => {
-            const rect = canvasElement.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
+        ['pm25', 'bc', 'oc', 'co', 'co2'].forEach(spKey => {
+            const canvasEl = document.getElementById(`boxPlot-${spKey}`);
+            if (!canvasEl) return;
 
-            const hoveredPoint = activeInteractivePoints.find(pt => {
-                const dist = Math.hypot(pt.x - mouseX, pt.y - mouseY);
-                return dist <= pt.radius;
+            canvasEl.addEventListener('mousemove', (e) => {
+                const rect = canvasEl.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                const hoveredPoint = activeInteractivePoints.find(pt => {
+                    if (pt.canvasId !== `boxPlot-${spKey}`) return false;
+                    const dist = Math.hypot(pt.x - mouseX, pt.y - mouseY);
+                    return dist <= pt.radius;
+                });
+
+                if (hoveredPoint) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = `${e.pageX + 12}px`;
+                    tooltip.style.top = `${e.pageY + 12}px`;
+                    tooltip.innerHTML = `
+                        <strong>${hoveredPoint.study_title || 'Study Entry'}</strong><br>
+                        <span><strong>Authors:</strong> ${hoveredPoint.authors || 'Unknown'} (${hoveredPoint.year || 'N/A'})</span><br>
+                        <span><strong>${hoveredPoint.species} EF:</strong> ${hoveredPoint.value} ${hoveredPoint.uncertainty ? '± ' + hoveredPoint.uncertainty : ''}</span><br>
+                        <span><strong>Environment:</strong> ${hoveredPoint.env || 'N/A'}</span>
+                    `;
+                } else {
+                    tooltip.style.display = 'none';
+                }
             });
 
-            if (hoveredPoint) {
-                tooltip.style.display = 'block';
-                tooltip.style.left = `${e.pageX + 12}px`;
-                tooltip.style.top = `${e.pageY + 12}px`;
-                tooltip.innerHTML = `
-                    <strong>${hoveredPoint.study_title || 'Study Entry'}</strong><br>
-                    <span><strong>Authors:</strong> ${hoveredPoint.authors || 'Unknown'} (${hoveredPoint.year || 'N/A'})</span><br>
-                    <span><strong>${hoveredPoint.species} EF:</strong> ${hoveredPoint.value} ${hoveredPoint.uncertainty ? '± ' + hoveredPoint.uncertainty : ''}</span><br>
-                    <span><strong>Environment:</strong> ${hoveredPoint.env || 'N/A'}</span>
-                `;
-            } else {
+            canvasEl.addEventListener('mouseleave', () => {
                 tooltip.style.display = 'none';
-            }
-        });
-
-        canvasElement.addEventListener('mouseleave', () => {
-            tooltip.style.display = 'none';
+            });
         });
 
         function filterTable() {
@@ -855,12 +899,6 @@
             document.body.appendChild(anchorToken);
             anchorToken.click();
             document.body.removeChild(anchorToken);
-        }
-
-        function exportDataViewToExcel() {
-            if (globalCachedStudies.length === 0) return;
-            const csv = generateCSVContent(globalCachedStudies);
-            triggerDownload(csv, "global_emissions_full_registry.csv");
         }
 
         function exportSummarySelectionToExcel() {
