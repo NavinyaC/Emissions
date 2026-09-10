@@ -19,7 +19,6 @@
             color: var(--text); 
         }
         
-        /* Navigation Top Bar */
         .navbar {
             background-color: white;
             border-bottom: 1px solid var(--border);
@@ -57,7 +56,6 @@
             border-bottom-color: var(--primary);
         }
 
-        /* Content Views */
         .page-view { display: none; }
         .page-view.active { display: block; }
 
@@ -77,12 +75,11 @@
         h1 { margin: 0 0 10px 0; color: var(--primary); font-size: 28px; }
         .subtitle { color: #57606a; margin: 0; font-size: 16px; }
         
-        /* About View Style Settings */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
-            margin-top: 30px;
+            margin-top: 25px;
             margin-bottom: 40px;
         }
         .team-card {
@@ -93,8 +90,8 @@
             background-color: #ffffff;
         }
         .photo-placeholder {
-            width: 120px;
-            height: 120px;
+            width: 110px;
+            height: 110px;
             border-radius: 50%;
             background-color: #e1e4e8;
             margin: 0 auto 15px auto;
@@ -107,7 +104,7 @@
             border: 2px dashed #c0c4c8;
         }
         .team-name { font-size: 18px; font-weight: 600; margin: 10px 0 5px 0; }
-        .team-role { font-size: 13px; color: #57606a; line-height: 1.4; }
+        .team-role { font-size: 13px; color: #57606a; line-height: 1.45; }
         .submission-links { background: #fafbfc; border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-top: 30px; }
         .submission-links p { margin-top: 0; font-weight: 500; }
         .submission-links ul { margin: 0; padding-left: 20px; color: var(--primary); }
@@ -115,16 +112,13 @@
         .submission-links a { color: var(--primary); font-weight: 600; text-decoration: none; }
         .submission-links a:hover { text-decoration: underline; }
 
-        /* Controls and Dropdowns */
         .controls-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
         .search-input, .filter-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: white; }
         .search-input { flex: 1; min-width: 250px; }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(135, 41, 23, 0.15); }
         .btn-action { background-color: var(--primary); color: white; border: none; padding: 10px 16px; font-weight: 600; font-size: 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .btn-action:hover { background-color: #6e1d13; }
         .btn-action:disabled { background-color: #e1e4e8; color: #8c959f; cursor: not-allowed; }
         
-        /* Data Grid Table Elements */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -138,7 +132,6 @@
         .title-link:hover { text-decoration: underline; }
         .loading { padding: 20px; text-align: center; color: #57606a; font-style: italic; }
 
-        /* Summary Dashboard Layout Graphics */
         .summary-layout { display: grid; grid-template-columns: 320px 1fr; gap: 30px; margin-top: 20px; }
         .summary-controls { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: #fafbfc; height: fit-content; position: sticky; top: 80px; }
         .summary-controls h3 { margin-top: 0; color: #24292f; font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
@@ -147,7 +140,6 @@
         .btn-download { display: block; width: 100%; text-align: center; background-color: #24292f; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 20px; text-decoration: none; box-sizing: border-box; }
         .btn-download:hover { background-color: #1f2328; }
         
-        /* 5-Species Box Plot Stack Layout */
         .charts-stack { display: flex; flex-direction: column; gap: 25px; }
         .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -155,7 +147,6 @@
         canvas { width: 100% !important; height: 260px !important; }
         .chart-placeholder { padding: 40px; text-align: center; color: #57606a; font-style: italic; border: 1px dashed var(--border); border-radius: 6px; background: #fafbfc; }
 
-        /* Floating Tooltip */
         #chartTooltip {
             position: absolute;
             display: none;
@@ -168,14 +159,13 @@
             pointer-events: none;
             z-index: 1000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-            max-width: 280px;
+            max-width: 320px;
         }
         #chartTooltip strong { color: #58a6ff; }
     </style>
 </head>
 <body>
 
-    <!-- Header Navigation Frame -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">The Emission Factor Portal</div>
@@ -187,29 +177,40 @@
         </div>
     </nav>
 
-    <!-- Floating Tooltip Container -->
     <div id="chartTooltip"></div>
 
-    <!-- 1. HOME / ABOUT PAGE VIEW -->
+    <!-- 1. ABOUT PAGE VIEW -->
     <div id="about-view" class="page-view active">
         <div class="container">
             <div class="header">
                 <h1>The Emission Factor Portal</h1>
-                <p class="subtitle">An open-access dashboard dedicated to mapping regional emissions data and climate-relevant aerosol tracking metrics.</p>
+                <p class="subtitle">An open-access platform dedicated to compiling regional emission factors and supporting global emission inventory development.</p>
             </div>
-            <h3>Development Team</h3>
+            
+            <h3>Development & Curation Team</h3>
             <div class="team-grid" id="teamContainer">
-                <div class="loading">Loading developer infrastructure data...</div>
+                <!-- Navinya Chimurkar Card -->
+                <div class="team-card">
+                    <div class="photo-placeholder">NC</div>
+                    <div class="team-name">Dr. Navinya Dilip Chimurkar</div>
+                    <div class="team-role">
+                        Assistant Professor<br>
+                        Department of Environmental and Sustainability Engineering<br>
+                        Indian Institute of Technology (IIT) Jodhpur, India
+                    </div>
+                </div>
+
+                <!-- Collaborative contributors populated via about.json if available -->
+                <div id="dynamicTeamCards"></div>
             </div>
 
-            <!-- Submission Block -->
             <div class="submission-links">
-                <p>💡 <strong>Data Contribution & Curation Protocol:</strong></p>
-                <span>Please use the following links to report new data, request data updates, or flag issues in the data:</span>
+                <p>💡 <strong>Data Contribution & Review Protocol:</strong></p>
+                <span>Please use the following pathways to submit new datasets, suggest revisions, or flag parameter inconsistencies:</span>
                 <ul style="margin-top: 12px;">
-                    <li><a href="#" target="_blank">Submit New Dataset Profile</a></li>
-                    <li><a href="#" target="_blank">Request Version/Parameter Updates</a></li>
-                    <li><a href="#" target="_blank">Report Data Discrepancy or Issue</a></li>
+                    <li><a href="#" target="_blank">Submit New Dataset (Batch Entry / JSON)</a></li>
+                    <li><a href="#" target="_blank">Request Parameter or Uncertainty Review</a></li>
+                    <li><a href="#" target="_blank">Report an Inventory or Reporting Discrepancy</a></li>
                 </ul>
             </div>
         </div>
@@ -220,11 +221,11 @@
         <div class="container">
             <div class="header">
                 <h1>Emissions Data Registry</h1>
-                <p class="subtitle">Browse verified scientific field measurements for particulate matter and trace gases.</p>
+                <p class="subtitle">Browse verified laboratory and field measurement records across standardized source classifications.</p>
             </div>
 
             <div class="controls-bar">
-                <input type="text" id="searchBox" class="search-input" placeholder="🔍 Search by study title, author, sector, fuel, or region...">
+                <input type="text" id="searchBox" class="search-input" placeholder="🔍 Search by study title, author, sector, fuel, device, or region...">
                 <select id="typeFilter" class="filter-select" onchange="filterTable()">
                     <option value="all">All Environments</option>
                     <option value="Lab">Lab Studies</option>
@@ -233,7 +234,7 @@
                 <select id="sectorFilter" class="filter-select" onchange="filterTable()">
                     <option value="all">All Sectors (Dynamic)</option>
                 </select>
-                <button class="btn-action" disabled title="Full registry download temporarily disabled">📥 Download Registry (Disabled)</button>
+                <button class="btn-action" disabled title="Full dataset download temporarily disabled">📥 Download Full Registry (Disabled)</button>
             </div>
 
             <div class="table-responsive">
@@ -241,7 +242,7 @@
                     <thead>
                         <tr>
                             <th style="width: 22%;">Study Metadata</th>
-                            <th style="width: 18%;">Experimental Configuration</th>
+                            <th style="width: 20%;">Configuration & Fuel Details</th>
                             <th>PM<sub>2.5</sub> EF</th>
                             <th>BC EF</th>
                             <th>OC EF</th>
@@ -251,7 +252,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="7" class="loading">Loading records from core database...</td>
+                            <td colspan="7" class="loading">Loading database records...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -264,7 +265,7 @@
         <div class="container">
             <div class="header">
                 <h1>Data Summary Insights</h1>
-                <p class="subtitle">Statistical distribution and individual study scatter points per emission species.</p>
+                <p class="subtitle">Evaluate isolated distributions and experimental scatter per emission species.</p>
             </div>
             
             <div class="summary-layout">
@@ -300,7 +301,7 @@
 
                 <div class="charts-stack" id="chartsStackContainer">
                     <div class="chart-placeholder" id="initialQueryPlaceholder">
-                        📊 Please select a Sector, Sub-Sector, Fuel, or Device combination in the configuration bench to visualize the distribution box plots.
+                        📊 Select a Sector, Sub-Sector, Fuel, or Device combination in the configuration bench to visualize species-specific box plots.
                     </div>
                     
                     <div class="chart-card calculation-graph-card" style="display:none;">
@@ -376,7 +377,7 @@
         }
 
         const pathSegments = window.location.pathname.split('/');
-        const repoOwner = window.location.hostname.split('.')[0] || pathSegments[1];
+        const repoOwner = window.location.hostname.split('.')[0] || pathSegments[1] || "NavinyaC";
         
         const aboutFileUrl = `https://raw.githubusercontent.com/${repoOwner}/Emissions/main/data/about/about.json`;
         const studiesApiUrl = `https://api.github.com/repos/${repoOwner}/Emissions/contents/data/studies`;
@@ -384,15 +385,39 @@
         let globalCachedStudies = [];
         let activeInteractivePoints = [];
 
+        function parseNumeric(val) {
+            if (val === null || val === undefined) return NaN;
+            if (typeof val === 'number') return val;
+            const clean = String(val).trim();
+            if (clean === "") return NaN;
+            const match = clean.match(/^[-+]?[0-9]*\.?[0-9]+/);
+            return match ? parseFloat(match[0]) : NaN;
+        }
+
+        function getStudyRegion(item) {
+            if (item.region && item.country) return `${item.region} / ${item.country}`;
+            return item.region_country || item.country || item.region || 'N/A';
+        }
+
+        function getStudySubSector(item) {
+            return item.sub_sector || item.subsector || item.SubSector || 'N/A';
+        }
+
+        function getStudyExperiments(item, metricKey) {
+            return item.number_of_experiments || item[`n_${metricKey}`] || item.n_pm25 || '';
+        }
+
         async function fetchAboutSection() {
-            const container = document.getElementById("teamContainer");
+            const container = document.getElementById("dynamicTeamCards");
             try {
                 const response = await fetch(aboutFileUrl);
-                if (!response.ok) throw new Error();
+                if (!response.ok) return;
                 const teamData = await response.json();
                 
                 container.innerHTML = "";
                 teamData.forEach(member => {
+                    if (member.name && member.name.toLowerCase().includes("navinya")) return;
+
                     const isUrl = member.photo_placeholder && member.photo_placeholder.startsWith('http');
                     const photoHtml = isUrl 
                         ? `<img src="${member.photo_placeholder}" alt="${member.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`
@@ -407,17 +432,20 @@
                     `;
                 });
             } catch (err) {
-                container.innerHTML = `<div style="color: red; padding: 20px;">Failed to load team data. Ensure data/about/about.json exists.</div>`;
+                // Keep default HTML members intact
             }
         }
 
         function formatEF(value, uncertainty, nSamples) {
-            if (!value && value !== 0) return '-';
-            let html = `<strong>${value}</strong>`;
-            if (uncertainty || nSamples) {
+            const num = parseNumeric(value);
+            if (isNaN(num)) return '-';
+            let html = `<strong>${num}</strong>`;
+            const unc = parseNumeric(uncertainty);
+            const n = nSamples ? String(nSamples).trim() : '';
+            if (!isNaN(unc) || n !== '') {
                 html += `<div class="sub-value">`;
-                if (uncertainty) html += `±${uncertainty}`;
-                if (nSamples) html += ` (N=${nSamples})`;
+                if (!isNaN(unc)) html += `±${unc}`;
+                if (n !== '') html += ` (N=${n})`;
                 html += `</div>`;
             }
             return html;
@@ -459,29 +487,40 @@
 
             studies.forEach(data => {
                 const row = document.createElement("tr");
-                row.setAttribute("data-environment", data.field_or_lab || "");
+                const env = data.field_or_lab || data['Field/Lab'] || "N/A";
+                row.setAttribute("data-environment", env);
                 row.setAttribute("data-sector", data.sector || "");
-                
+
+                const cleanDoi = data.doi ? data.doi.replace(/^(https?:\/\/)?(dx\.)?doi\.org\//, '') : '';
+                const titleHtml = cleanDoi 
+                    ? `<a href="https://doi.org/${cleanDoi}" target="_blank" class="title-link"><strong style="font-size: 14px;">${data.study_title || 'Untitled Study'}</strong></a>` 
+                    : `<strong>${data.study_title || 'Untitled Study'}</strong>`;
+
+                const subSec = getStudySubSector(data);
+                const regionCountry = getStudyRegion(data);
+                const fuelDisplay = data.specific_fuel_name ? `${data.fuel} (${data.specific_fuel_name})` : (data.fuel || 'N/A');
+                const deviceDisplay = data.specific_device_name ? `${data.device} (${data.specific_device_name})` : (data.device || 'N/A');
+
                 row.innerHTML = `
                     <td>
-                        ${data.doi ? `<a href="https://doi.org/${data.doi}" target="_blank" class="title-link"><strong style="font-size: 14px;">${data.study_title || 'Untitled Study'}</strong></a>` : `<strong>${data.study_title || 'Untitled Study'}</strong>`}
+                        ${titleHtml}
                         <br>
                         <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || 'Unknown'}</small>
-                        <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || 'N/A'}</span>
+                        <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || data.year || 'N/A'}</span>
                     </td>
                     <td>
                         <strong>Sector:</strong> ${data.sector || 'N/A'}<br>
-                        <strong>Sub-Sector:</strong> ${data.sub_sector || 'N/A'}<br>
-                        <strong>Fuel:</strong> ${data.fuel || 'N/A'}<br>
-                        <strong>Device:</strong> ${data.device || 'N/A'}<br>
-                        <strong>Region:</strong> ${data.region_country || 'N/A'}<br>
-                        <span class="badge ${data.field_or_lab === 'Lab' ? 'badge-lab' : 'badge-field'}" style="margin-top: 4px; display: inline-block;">${data.field_or_lab || 'N/A'}</span>
+                        <strong>Sub-Sector:</strong> ${subSec}<br>
+                        <strong>Fuel:</strong> ${fuelDisplay}<br>
+                        <strong>Device:</strong> ${deviceDisplay}<br>
+                        <strong>Region:</strong> ${regionCountry}<br>
+                        <span class="badge ${env === 'Lab' ? 'badge-lab' : 'badge-field'}" style="margin-top: 4px; display: inline-block;">${env}</span>
                     </td>
-                    <td>${formatEF(data.ef_pm25, data.un_pm25, data.n_pm25)}</td>
-                    <td>${formatEF(data.ef_bc, data.un_bc, data.n_bc)}</td>
-                    <td>${formatEF(data.ef_oc, data.un_oc, data.n_oc)}</td>
-                    <td>${formatEF(data.ef_co, data.un_co, data.n_co)}</td>
-                    <td>${formatEF(data.ef_co2, data.un_co2, data.n_co2)}</td>
+                    <td>${formatEF(data.ef_pm25, data.un_pm25, getStudyExperiments(data, 'pm25'))}</td>
+                    <td>${formatEF(data.ef_bc, data.un_bc, getStudyExperiments(data, 'bc'))}</td>
+                    <td>${formatEF(data.ef_oc, data.un_oc, getStudyExperiments(data, 'oc'))}</td>
+                    <td>${formatEF(data.ef_co, data.un_co, getStudyExperiments(data, 'co'))}</td>
+                    <td>${formatEF(data.ef_co2, data.un_co2, getStudyExperiments(data, 'co2'))}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -516,7 +555,8 @@
 
             globalCachedStudies.forEach(item => {
                 if (isInitialStartup || selectedSector === "all" || item.sector === selectedSector) {
-                    if (item.sub_sector) targetSubSectors.add(item.sub_sector);
+                    const ss = getStudySubSector(item);
+                    if (ss && ss !== 'N/A') targetSubSectors.add(ss);
                 }
             });
 
@@ -536,7 +576,7 @@
 
             globalCachedStudies.forEach(item => {
                 const matchSector = (isInitialStartup || selectedSector === "all" || item.sector === selectedSector);
-                const matchSubSector = (isInitialStartup || selectedSubSector === "all" || item.sub_sector === selectedSubSector);
+                const matchSubSector = (isInitialStartup || selectedSubSector === "all" || getStudySubSector(item) === selectedSubSector);
                 if (matchSector && matchSubSector && item.fuel) targetFuels.add(item.fuel);
             });
 
@@ -557,7 +597,7 @@
 
             globalCachedStudies.forEach(item => {
                 const matchSector = (isInitialStartup || selectedSector === "all" || item.sector === selectedSector);
-                const matchSubSector = (isInitialStartup || selectedSubSector === "all" || item.sub_sector === selectedSubSector);
+                const matchSubSector = (isInitialStartup || selectedSubSector === "all" || getStudySubSector(item) === selectedSubSector);
                 const matchFuel = (selectedFuel === "all" || item.fuel === selectedFuel);
                 if (matchSector && matchSubSector && matchFuel && item.device) targetDevices.add(item.device);
             });
@@ -614,7 +654,7 @@
 
             const targets = globalCachedStudies.filter(item => {
                 return (sector === "all" || item.sector === sector) &&
-                       (subSector === "all" || item.sub_sector === subSector) &&
+                       (subSector === "all" || getStudySubSector(item) === subSector) &&
                        (fuel === "all" || item.fuel === fuel) &&
                        (device === "all" || item.device === device);
             });
@@ -655,7 +695,7 @@
 
             let allValues = [];
             dataset.forEach(d => {
-                const v = parseFloat(d[`ef_${speciesKey}`]);
+                const v = parseNumeric(d[`ef_${speciesKey}`]);
                 if (!isNaN(v)) allValues.push(v);
             });
 
@@ -665,12 +705,10 @@
 
             const yScale = (val) => padding.top + plotHeight - ((val - minVal) / (maxVal - minVal)) * plotHeight;
 
-            // Box Plot Outer Border
             ctx.strokeStyle = '#000000';
             ctx.lineWidth = 1.5;
             ctx.strokeRect(padding.left, padding.top, plotWidth, plotHeight);
 
-            // Y-Axis Ticks & Labels
             ctx.fillStyle = '#000000';
             ctx.font = '11px -apple-system, sans-serif';
             ctx.textAlign = 'right';
@@ -685,7 +723,6 @@
                 ctx.fillText(tickVal.toFixed(tickVal > 10 ? 0 : 1), padding.left - 8, yPos + 4);
             }
 
-            // Y-Axis Title
             ctx.save();
             ctx.translate(18, padding.top + plotHeight / 2);
             ctx.rotate(-Math.PI / 2);
@@ -701,17 +738,17 @@
 
             environments.forEach(env => {
                 const subset = dataset.filter(d => {
-                    const envMatches = (d.field_or_lab || '').toLowerCase().includes(env.type.toLowerCase());
-                    const v = parseFloat(d[`ef_${speciesKey}`]);
+                    const rawEnv = d.field_or_lab || d['Field/Lab'] || '';
+                    const envMatches = rawEnv.toLowerCase().includes(env.type.toLowerCase());
+                    const v = parseNumeric(d[`ef_${speciesKey}`]);
                     return envMatches && !isNaN(v);
                 });
 
-                const values = subset.map(d => parseFloat(d[`ef_${speciesKey}`]));
+                const values = subset.map(d => parseNumeric(d[`ef_${speciesKey}`]));
                 const stats = calculateBoxPlotStats(values);
                 const boxCenterX = env.posX;
                 const boxWidth = 50;
 
-                // X-Axis Category Sub-labels
                 ctx.fillStyle = '#000000';
                 ctx.textAlign = 'center';
                 ctx.font = 'bold 12px -apple-system, sans-serif';
@@ -724,7 +761,6 @@
                     const yQ3 = yScale(stats.q3);
                     const yMax = yScale(stats.max);
 
-                    // Whiskers
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
@@ -734,7 +770,6 @@
                     ctx.lineTo(boxCenterX, yMin);
                     ctx.stroke();
 
-                    // Whisker Caps
                     const capWidth = 24;
                     ctx.beginPath();
                     ctx.moveTo(boxCenterX - capWidth / 2, yMax);
@@ -743,21 +778,18 @@
                     ctx.lineTo(boxCenterX + capWidth / 2, yMin);
                     ctx.stroke();
 
-                    // Box Body
                     ctx.fillStyle = env.color;
                     ctx.fillRect(boxCenterX - boxWidth / 2, yQ3, boxWidth, yQ1 - yQ3);
                     ctx.strokeRect(boxCenterX - boxWidth / 2, yQ3, boxWidth, yQ1 - yQ3);
 
-                    // Median Line
                     ctx.beginPath();
                     ctx.moveTo(boxCenterX - boxWidth / 2, yMed);
                     ctx.lineTo(boxCenterX + boxWidth / 2, yMed);
                     ctx.stroke();
                 }
 
-                // Scatter Points Overlaid with Jitter & Tooltip tracking
                 subset.forEach((d, pointIdx) => {
-                    const v = parseFloat(d[`ef_${speciesKey}`]);
+                    const v = parseNumeric(d[`ef_${speciesKey}`]);
                     const py = yScale(v);
                     const pseudoJitter = ((pointIdx * 19) % 28) - 14;
                     const px = boxCenterX + pseudoJitter;
@@ -778,17 +810,16 @@
                         radius: 6,
                         study_title: d.study_title,
                         authors: d.authors,
-                        year: d.year_publication,
+                        year: d.year_publication || d.year,
                         value: v,
                         uncertainty: d[`un_${speciesKey}`],
-                        env: d.field_or_lab,
+                        env: d.field_or_lab || d['Field/Lab'],
                         species: speciesLabel
                     });
                 });
             });
         }
 
-        // Global Mouseover Listener across all 5 canvases for dynamic tooltips
         const tooltip = document.getElementById('chartTooltip');
 
         ['pm25', 'bc', 'oc', 'co', 'co2'].forEach(spKey => {
@@ -832,14 +863,13 @@
             const selectedSector = document.getElementById('sectorFilter').value;
 
             const filtered = globalCachedStudies.filter(item => {
-                const isTransportSector = item.sector && item.sector.toLowerCase().includes('transport');
-                if (isTransportSector && selectedSector === 'all' && searchText === '') {
-                    return true;
-                }
-
-                const itemText = `${item.study_title} ${item.authors} ${item.fuel} ${item.device} ${item.region_country} ${item.sector}`.toLowerCase();
+                const itemEnv = item.field_or_lab || item['Field/Lab'] || '';
+                const subSec = getStudySubSector(item);
+                const reg = getStudyRegion(item);
+                
+                const itemText = `${item.study_title || ''} ${item.authors || ''} ${item.fuel || ''} ${item.device || ''} ${reg} ${item.sector || ''} ${subSec}`.toLowerCase();
                 const matchesSearch = itemText.includes(searchText);
-                const matchesEnv = (selectedEnv === 'all' || item.field_or_lab === selectedEnv);
+                const matchesEnv = (selectedEnv === 'all' || itemEnv.toLowerCase() === selectedEnv.toLowerCase());
                 const matchesSector = (selectedSector === 'all' || item.sector === selectedSector);
                 
                 return matchesSearch && matchesEnv && matchesSector;
@@ -849,42 +879,37 @@
 
         document.getElementById('searchBox').addEventListener('input', filterTable);
 
-        function parseValueAndUnit(rawStr) {
-            if (!rawStr && rawStr !== 0) return { value: "", unit: "" };
-            const cleanStr = String(rawStr).trim();
-            const valMatch = cleanStr.match(/^[\d\.]+/);
-            if (!valMatch) return { value: "", unit: cleanStr };
-            
-            const value = valMatch[0];
-            const unit = cleanStr.replace(value, "").trim();
-            return { value, unit };
-        }
-
         function generateCSVContent(studiesArray) {
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Device,Region/Country,Environment,Unit Column,PM25 Value,PM25 Uncertainty,PM25 N,BC Value,BC Uncertainty,BC N,OC Value,OC Uncertainty,OC N,CO Value,CO Uncertainty,CO N,CO2 Value,CO2 Uncertainty,CO2 N\n";
+            csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Specific Fuel,Device,Specific Device,Region,Country,Environment,Method,PM25 EF,PM25 Uncertainty,BC EF,BC Uncertainty,OC EF,OC Uncertainty,CO EF,CO Uncertainty,CO2 EF,CO2 Uncertainty,SO2 EF,NMVOC EF,CH4 EF,NOx EF,N2O EF,Burn Rate\n";
 
             studiesArray.forEach(item => {
-                const parsedUnitObj = parseValueAndUnit(item.ef_pm25 || item.ef_bc || item.ef_oc || item.ef_co || item.ef_co2);
-                const standardUnit = parsedUnitObj.unit;
-
                 const rowsArray = [
                     `"${(item.study_title || '').replace(/"/g, '""')}"`,
                     `"${(item.authors || '').replace(/"/g, '""')}"`,
-                    `"${item.year_publication || ''}"`,
+                    `"${item.year_publication || item.year || ''}"`,
                     `"${item.doi || ''}"`,
                     `"${item.sector || ''}"`,
-                    `"${item.sub_sector || ''}"`,
+                    `"${getStudySubSector(item)}"`,
                     `"${item.fuel || ''}"`,
+                    `"${item.specific_fuel_name || ''}"`,
                     `"${item.device || ''}"`,
-                    `"${item.region_country || ''}"`,
-                    `"${item.field_or_lab || ''}"`,
-                    `"${standardUnit}"`, 
-                    `"${parseValueAndUnit(item.ef_pm25).value}"`, `"${(item.un_pm25 || '')}"`, `"${(item.n_pm25 || '')}"`,
-                    `"${parseValueAndUnit(item.ef_bc).value}"`, `"${(item.un_bc || '')}"`, `"${(item.n_bc || '')}"`,
-                    `"${parseValueAndUnit(item.ef_oc).value}"`, `"${(item.un_oc || '')}"`, `"${(item.n_oc || '')}"`,
-                    `"${parseValueAndUnit(item.ef_co).value}"`, `"${(item.un_co || '')}"`, `"${(item.n_co || '')}"`,
-                    `"${parseValueAndUnit(item.ef_co2).value}"`, `"${(item.un_co2 || '')}"`, `"${(item.n_co2 || '')}"`
+                    `"${item.specific_device_name || ''}"`,
+                    `"${item.region || ''}"`,
+                    `"${item.country || ''}"`,
+                    `"${item.field_or_lab || item['Field/Lab'] || ''}"`,
+                    `"${item.method || ''}"`,
+                    `"${parseNumeric(item.ef_pm25) || ''}"`, `"${item.un_pm25 || ''}"`,
+                    `"${parseNumeric(item.ef_bc) || ''}"`, `"${item.un_bc || ''}"`,
+                    `"${parseNumeric(item.ef_oc) || ''}"`, `"${item.un_oc || ''}"`,
+                    `"${parseNumeric(item.ef_co) || ''}"`, `"${item.un_co || ''}"`,
+                    `"${parseNumeric(item.ef_co2) || ''}"`, `"${item.un_co2 || ''}"`,
+                    `"${parseNumeric(item.ef_so2) || ''}"`,
+                    `"${parseNumeric(item.ef_nmvoc) || ''}"`,
+                    `"${parseNumeric(item.ef_ch4) || ''}"`,
+                    `"${parseNumeric(item.ef_nox) || ''}"`,
+                    `"${parseNumeric(item.ef_n2o) || ''}"`,
+                    `"${parseNumeric(item.burn_rate) || ''}"`
                 ];
                 csvContent += rowsArray.join(",") + "\n";
             });
@@ -909,7 +934,7 @@
 
             const filteredTargets = globalCachedStudies.filter(item => {
                 return (sector === "all" || item.sector === sector) &&
-                       (subSector === "all" || item.sub_sector === subSector) &&
+                       (subSector === "all" || getStudySubSector(item) === subSector) &&
                        (fuel === "all" || item.fuel === fuel) &&
                        (device === "all" || item.device === device);
             });
@@ -919,7 +944,7 @@
                 return;
             }
             const csv = generateCSVContent(filteredTargets);
-            triggerDownload(csv, `summary_selection_export_${sector}.csv`);
+            triggerDownload(csv, `summary_selection_export_${sector || 'all'}.csv`);
         }
 
         window.addEventListener('resize', () => {
