@@ -19,6 +19,7 @@
             color: var(--text); 
         }
         
+        /* Navigation Top Bar */
         .navbar {
             background-color: white;
             border-bottom: 1px solid var(--border);
@@ -56,6 +57,7 @@
             border-bottom-color: var(--primary);
         }
 
+        /* Content Views */
         .page-view { display: none; }
         .page-view.active { display: block; }
 
@@ -75,11 +77,12 @@
         h1 { margin: 0 0 10px 0; color: var(--primary); font-size: 28px; }
         .subtitle { color: #57606a; margin: 0; font-size: 16px; }
         
+        /* About View Style Settings */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 25px;
-            margin-top: 25px;
+            margin-top: 30px;
             margin-bottom: 40px;
         }
         .team-card {
@@ -90,8 +93,8 @@
             background-color: #ffffff;
         }
         .photo-placeholder {
-            width: 110px;
-            height: 110px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             background-color: #e1e4e8;
             margin: 0 auto 15px auto;
@@ -104,7 +107,7 @@
             border: 2px dashed #c0c4c8;
         }
         .team-name { font-size: 18px; font-weight: 600; margin: 10px 0 5px 0; }
-        .team-role { font-size: 13px; color: #57606a; line-height: 1.45; }
+        .team-role { font-size: 13px; color: #57606a; line-height: 1.4; }
         .submission-links { background: #fafbfc; border: 1px solid var(--border); border-radius: 6px; padding: 20px; margin-top: 30px; }
         .submission-links p { margin-top: 0; font-weight: 500; }
         .submission-links ul { margin: 0; padding-left: 20px; color: var(--primary); }
@@ -112,13 +115,16 @@
         .submission-links a { color: var(--primary); font-weight: 600; text-decoration: none; }
         .submission-links a:hover { text-decoration: underline; }
 
+        /* Controls and Dropdowns */
         .controls-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
         .search-input, .filter-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: white; }
         .search-input { flex: 1; min-width: 250px; }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(135, 41, 23, 0.15); }
         .btn-action { background-color: var(--primary); color: white; border: none; padding: 10px 16px; font-weight: 600; font-size: 14px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .btn-action:hover { background-color: #6e1d13; }
         .btn-action:disabled { background-color: #e1e4e8; color: #8c959f; cursor: not-allowed; }
         
+        /* Data Grid Table Elements */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -132,6 +138,7 @@
         .title-link:hover { text-decoration: underline; }
         .loading { padding: 20px; text-align: center; color: #57606a; font-style: italic; }
 
+        /* Summary Dashboard Layout Graphics */
         .summary-layout { display: grid; grid-template-columns: 320px 1fr; gap: 30px; margin-top: 20px; }
         .summary-controls { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: #fafbfc; height: fit-content; position: sticky; top: 80px; }
         .summary-controls h3 { margin-top: 0; color: #24292f; font-size: 16px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
@@ -140,6 +147,7 @@
         .btn-download { display: block; width: 100%; text-align: center; background-color: #24292f; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 20px; text-decoration: none; box-sizing: border-box; }
         .btn-download:hover { background-color: #1f2328; }
         
+        /* 5-Species Box Plot Stack Layout */
         .charts-stack { display: flex; flex-direction: column; gap: 25px; }
         .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -147,6 +155,7 @@
         canvas { width: 100% !important; height: 260px !important; }
         .chart-placeholder { padding: 40px; text-align: center; color: #57606a; font-style: italic; border: 1px dashed var(--border); border-radius: 6px; background: #fafbfc; }
 
+        /* Floating Tooltip */
         #chartTooltip {
             position: absolute;
             display: none;
@@ -166,6 +175,7 @@
 </head>
 <body>
 
+    <!-- Header Navigation Frame -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-brand">The Emission Factor Portal</div>
@@ -177,40 +187,29 @@
         </div>
     </nav>
 
+    <!-- Floating Tooltip Container -->
     <div id="chartTooltip"></div>
 
-    <!-- 1. ABOUT PAGE VIEW -->
+    <!-- 1. HOME / ABOUT PAGE VIEW -->
     <div id="about-view" class="page-view active">
         <div class="container">
             <div class="header">
-                <h1>The Emission Factor Portal</h1>
-                <p class="subtitle">An open-access platform dedicated to compiling regional emission factors and supporting global emission inventory development.</p>
+                <h1>About the Platform</h1>
+                <p class="subtitle">An open-access dashboard dedicated to mapping regional emissions data and climate-relevant aerosol tracking metrics.</p>
             </div>
-            
-            <h3>Development & Curation Team</h3>
+            <h3>Development Team</h3>
             <div class="team-grid" id="teamContainer">
-                <!-- Navinya Chimurkar Card -->
-                <div class="team-card">
-                    <div class="photo-placeholder">NC</div>
-                    <div class="team-name">Dr. Navinya Dilip Chimurkar</div>
-                    <div class="team-role">
-                        Assistant Professor<br>
-                        Department of Environmental and Sustainability Engineering<br>
-                        Indian Institute of Technology (IIT) Jodhpur, India
-                    </div>
-                </div>
-
-                <!-- Collaborative contributors populated via about.json if available -->
-                <div id="dynamicTeamCards"></div>
+                <div class="loading">Loading developer infrastructure data...</div>
             </div>
 
+            <!-- Submission Block -->
             <div class="submission-links">
-                <p>💡 <strong>Data Contribution & Review Protocol:</strong></p>
-                <span>Please use the following pathways to submit new datasets, suggest revisions, or flag parameter inconsistencies:</span>
+                <p>💡 <strong>Data Contribution & Curation Protocol:</strong></p>
+                <span>Please use the following links to report new data, request data updates, or flag issues in the data:</span>
                 <ul style="margin-top: 12px;">
-                    <li><a href="#" target="_blank">Submit New Dataset (Batch Entry / JSON)</a></li>
-                    <li><a href="#" target="_blank">Request Parameter or Uncertainty Review</a></li>
-                    <li><a href="#" target="_blank">Report an Inventory or Reporting Discrepancy</a></li>
+                    <li><a href="#" target="_blank">Submit New Dataset Profile</a></li>
+                    <li><a href="#" target="_blank">Request Version/Parameter Updates</a></li>
+                    <li><a href="#" target="_blank">Report Data Discrepancy or Issue</a></li>
                 </ul>
             </div>
         </div>
@@ -221,11 +220,11 @@
         <div class="container">
             <div class="header">
                 <h1>Emissions Data Registry</h1>
-                <p class="subtitle">Browse verified laboratory and field measurement records across standardized source classifications.</p>
+                <p class="subtitle">Browse verified scientific field measurements for particulate matter and trace gases.</p>
             </div>
 
             <div class="controls-bar">
-                <input type="text" id="searchBox" class="search-input" placeholder="🔍 Search by study title, author, sector, fuel, device, or region...">
+                <input type="text" id="searchBox" class="search-input" placeholder="🔍 Search by study title, author, sector, fuel, or region...">
                 <select id="typeFilter" class="filter-select" onchange="filterTable()">
                     <option value="all">All Environments</option>
                     <option value="Lab">Lab Studies</option>
@@ -234,7 +233,7 @@
                 <select id="sectorFilter" class="filter-select" onchange="filterTable()">
                     <option value="all">All Sectors (Dynamic)</option>
                 </select>
-                <button class="btn-action" disabled title="Full dataset download temporarily disabled">📥 Download Full Registry (Disabled)</button>
+                <button class="btn-action" disabled title="Full registry download temporarily disabled">📥 Download Registry (Disabled)</button>
             </div>
 
             <div class="table-responsive">
@@ -242,7 +241,7 @@
                     <thead>
                         <tr>
                             <th style="width: 22%;">Study Metadata</th>
-                            <th style="width: 20%;">Configuration & Fuel Details</th>
+                            <th style="width: 18%;">Experimental Configuration</th>
                             <th>PM<sub>2.5</sub> EF</th>
                             <th>BC EF</th>
                             <th>OC EF</th>
@@ -252,7 +251,7 @@
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="7" class="loading">Loading database records...</td>
+                            <td colspan="7" class="loading">Loading records from core database...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -265,7 +264,7 @@
         <div class="container">
             <div class="header">
                 <h1>Data Summary Insights</h1>
-                <p class="subtitle">Evaluate isolated distributions and experimental scatter per emission species.</p>
+                <p class="subtitle">Statistical distribution and individual study scatter points per emission species.</p>
             </div>
             
             <div class="summary-layout">
@@ -301,7 +300,7 @@
 
                 <div class="charts-stack" id="chartsStackContainer">
                     <div class="chart-placeholder" id="initialQueryPlaceholder">
-                        📊 Select a Sector, Sub-Sector, Fuel, or Device combination in the configuration bench to visualize species-specific box plots.
+                        📊 Please select a Sector, Sub-Sector, Fuel, or Device combination in the configuration bench to visualize the distribution box plots.
                     </div>
                     
                     <div class="chart-card calculation-graph-card" style="display:none;">
@@ -408,31 +407,34 @@
         }
 
         async function fetchAboutSection() {
-            const container = document.getElementById("dynamicTeamCards");
+            const container = document.getElementById("teamContainer");
             try {
                 const response = await fetch(aboutFileUrl);
-                if (!response.ok) return;
+                if (!response.ok) throw new Error();
                 const teamData = await response.json();
                 
                 container.innerHTML = "";
                 teamData.forEach(member => {
-                    if (member.name && member.name.toLowerCase().includes("navinya")) return;
-
                     const isUrl = member.photo_placeholder && member.photo_placeholder.startsWith('http');
                     const photoHtml = isUrl 
                         ? `<img src="${member.photo_placeholder}" alt="${member.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`
                         : (member.photo_placeholder || '👤');
 
+                    let roleText = member.role;
+                    if (member.name && member.name.toLowerCase().includes("navinya")) {
+                        roleText = "Assistant Professor, Department of Environmental and Sustainability Engineering, Indian Institute of Technology (IIT) Jodhpur, India";
+                    }
+
                     container.innerHTML += `
                         <div class="team-card">
                             <div class="photo-placeholder" style="overflow: hidden; padding: 0;">${photoHtml}</div>
                             <div class="team-name">${member.name}</div>
-                            <div class="team-role">${member.role}</div>
+                            <div class="team-role">${roleText}</div>
                         </div>
                     `;
                 });
             } catch (err) {
-                // Keep default HTML members intact
+                container.innerHTML = `<div style="color: red; padding: 20px;">Failed to load team data. Ensure data/about/about.json exists.</div>`;
             }
         }
 
@@ -493,8 +495,8 @@
 
                 const cleanDoi = data.doi ? data.doi.replace(/^(https?:\/\/)?(dx\.)?doi\.org\//, '') : '';
                 const titleHtml = cleanDoi 
-                    ? `<a href="https://doi.org/${cleanDoi}" target="_blank" class="title-link"><strong style="font-size: 14px;">${data.study_title || 'Untitled Study'}</strong></a>` 
-                    : `<strong>${data.study_title || 'Untitled Study'}</strong>`;
+                    ? `<a href="https://doi.org/${cleanDoi}" target="_blank" class="title-link"><strong style="font-size: 14px;">${data.study_title || data.Title || 'Untitled Study'}</strong></a>` 
+                    : `<strong>${data.study_title || data.Title || 'Untitled Study'}</strong>`;
 
                 const subSec = getStudySubSector(data);
                 const regionCountry = getStudyRegion(data);
@@ -505,11 +507,11 @@
                     <td>
                         ${titleHtml}
                         <br>
-                        <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || 'Unknown'}</small>
-                        <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || data.year || 'N/A'}</span>
+                        <small style="display: block; margin-top: 4px; color: #57606a;">Authors: ${data.authors || data.Authors || 'Unknown'}</small>
+                        <span class="badge" style="margin-top: 6px; display: inline-block;">${data.year_publication || data.year || data.Year || 'N/A'}</span>
                     </td>
                     <td>
-                        <strong>Sector:</strong> ${data.sector || 'N/A'}<br>
+                        <strong>Sector:</strong> ${data.sector || data.Sector || 'N/A'}<br>
                         <strong>Sub-Sector:</strong> ${subSec}<br>
                         <strong>Fuel:</strong> ${fuelDisplay}<br>
                         <strong>Device:</strong> ${deviceDisplay}<br>
@@ -528,7 +530,10 @@
 
         function populateInitialDropdowns() {
             const sectors = new Set();
-            globalCachedStudies.forEach(item => { if (item.sector) sectors.add(item.sector); });
+            globalCachedStudies.forEach(item => { 
+                const sec = item.sector || item.Sector;
+                if (sec) sectors.add(sec); 
+            });
 
             const sectorFilter = document.getElementById("sectorFilter");
             sectorFilter.innerHTML = '<option value="all">All Sectors (Dynamic)</option>';
@@ -554,7 +559,8 @@
             const targetSubSectors = new Set();
 
             globalCachedStudies.forEach(item => {
-                if (isInitialStartup || selectedSector === "all" || item.sector === selectedSector) {
+                const sec = item.sector || item.Sector;
+                if (isInitialStartup || selectedSector === "all" || sec === selectedSector) {
                     const ss = getStudySubSector(item);
                     if (ss && ss !== 'N/A') targetSubSectors.add(ss);
                 }
@@ -575,9 +581,11 @@
             const targetFuels = new Set();
 
             globalCachedStudies.forEach(item => {
-                const matchSector = (isInitialStartup || selectedSector === "all" || item.sector === selectedSector);
+                const sec = item.sector || item.Sector;
+                const matchSector = (isInitialStartup || selectedSector === "all" || sec === selectedSector);
                 const matchSubSector = (isInitialStartup || selectedSubSector === "all" || getStudySubSector(item) === selectedSubSector);
-                if (matchSector && matchSubSector && item.fuel) targetFuels.add(item.fuel);
+                const fuelVal = item.fuel || item.Fuel;
+                if (matchSector && matchSubSector && fuelVal) targetFuels.add(fuelVal);
             });
 
             const sumFuel = document.getElementById("sumFuel");
@@ -596,10 +604,13 @@
             const targetDevices = new Set();
 
             globalCachedStudies.forEach(item => {
-                const matchSector = (isInitialStartup || selectedSector === "all" || item.sector === selectedSector);
+                const sec = item.sector || item.Sector;
+                const matchSector = (isInitialStartup || selectedSector === "all" || sec === selectedSector);
                 const matchSubSector = (isInitialStartup || selectedSubSector === "all" || getStudySubSector(item) === selectedSubSector);
-                const matchFuel = (selectedFuel === "all" || item.fuel === selectedFuel);
-                if (matchSector && matchSubSector && matchFuel && item.device) targetDevices.add(item.device);
+                const fuelVal = item.fuel || item.Fuel;
+                const matchFuel = (selectedFuel === "all" || fuelVal === selectedFuel);
+                const devVal = item.device || item.Device;
+                if (matchSector && matchSubSector && matchFuel && devVal) targetDevices.add(devVal);
             });
 
             const sumDevice = document.getElementById("sumDevice");
@@ -653,10 +664,13 @@
             graphCards.forEach(card => card.style.display = "block");
 
             const targets = globalCachedStudies.filter(item => {
-                return (sector === "all" || item.sector === sector) &&
+                const sec = item.sector || item.Sector;
+                const fuelVal = item.fuel || item.Fuel;
+                const devVal = item.device || item.Device;
+                return (sector === "all" || sec === sector) &&
                        (subSector === "all" || getStudySubSector(item) === subSector) &&
-                       (fuel === "all" || item.fuel === fuel) &&
-                       (device === "all" || item.device === device);
+                       (fuel === "all" || fuelVal === fuel) &&
+                       (device === "all" || devVal === device);
             });
 
             document.getElementById("sampleCountDisplay").textContent = `Entries Matched: ${targets.length}`;
@@ -808,9 +822,9 @@
                         x: px,
                         y: py,
                         radius: 6,
-                        study_title: d.study_title,
-                        authors: d.authors,
-                        year: d.year_publication || d.year,
+                        study_title: d.study_title || d.Title,
+                        authors: d.authors || d.Authors,
+                        year: d.year_publication || d.year || d.Year,
                         value: v,
                         uncertainty: d[`un_${speciesKey}`],
                         env: d.field_or_lab || d['Field/Lab'],
@@ -866,11 +880,16 @@
                 const itemEnv = item.field_or_lab || item['Field/Lab'] || '';
                 const subSec = getStudySubSector(item);
                 const reg = getStudyRegion(item);
+                const sec = item.sector || item.Sector || '';
+                const title = item.study_title || item.Title || '';
+                const authors = item.authors || item.Authors || '';
+                const fuel = item.fuel || item.Fuel || '';
+                const device = item.device || item.Device || '';
                 
-                const itemText = `${item.study_title || ''} ${item.authors || ''} ${item.fuel || ''} ${item.device || ''} ${reg} ${item.sector || ''} ${subSec}`.toLowerCase();
+                const itemText = `${title} ${authors} ${fuel} ${device} ${reg} ${sec} ${subSec}`.toLowerCase();
                 const matchesSearch = itemText.includes(searchText);
                 const matchesEnv = (selectedEnv === 'all' || itemEnv.toLowerCase() === selectedEnv.toLowerCase());
-                const matchesSector = (selectedSector === 'all' || item.sector === selectedSector);
+                const matchesSector = (selectedSector === 'all' || sec === selectedSector);
                 
                 return matchesSearch && matchesEnv && matchesSector;
             });
@@ -885,15 +904,15 @@
 
             studiesArray.forEach(item => {
                 const rowsArray = [
-                    `"${(item.study_title || '').replace(/"/g, '""')}"`,
-                    `"${(item.authors || '').replace(/"/g, '""')}"`,
-                    `"${item.year_publication || item.year || ''}"`,
+                    `"${(item.study_title || item.Title || '').replace(/"/g, '""')}"`,
+                    `"${(item.authors || item.Authors || '').replace(/"/g, '""')}"`,
+                    `"${item.year_publication || item.year || item.Year || ''}"`,
                     `"${item.doi || ''}"`,
-                    `"${item.sector || ''}"`,
+                    `"${item.sector || item.Sector || ''}"`,
                     `"${getStudySubSector(item)}"`,
-                    `"${item.fuel || ''}"`,
+                    `"${item.fuel || item.Fuel || ''}"`,
                     `"${item.specific_fuel_name || ''}"`,
-                    `"${item.device || ''}"`,
+                    `"${item.device || item.Device || ''}"`,
                     `"${item.specific_device_name || ''}"`,
                     `"${item.region || ''}"`,
                     `"${item.country || ''}"`,
@@ -933,10 +952,13 @@
             const device = document.getElementById("sumDevice").value;
 
             const filteredTargets = globalCachedStudies.filter(item => {
-                return (sector === "all" || item.sector === sector) &&
+                const sec = item.sector || item.Sector;
+                const fuelVal = item.fuel || item.Fuel;
+                const devVal = item.device || item.Device;
+                return (sector === "all" || sec === sector) &&
                        (subSector === "all" || getStudySubSector(item) === subSector) &&
-                       (fuel === "all" || item.fuel === fuel) &&
-                       (device === "all" || item.device === device);
+                       (fuel === "all" || fuelVal === fuel) &&
+                       (device === "all" || devVal === device);
             });
 
             if (filteredTargets.length === 0) {
