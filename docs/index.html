@@ -491,7 +491,7 @@
                 const row = document.createElement("tr");
                 const env = data.field_or_lab || data['Field/Lab'] || "N/A";
                 row.setAttribute("data-environment", env);
-                row.setAttribute("data-sector", data.sector || "");
+                row.setAttribute("data-sector", data.sector || data.Sector || "");
 
                 const cleanDoi = data.doi ? data.doi.replace(/^(https?:\/\/)?(dx\.)?doi\.org\//, '') : '';
                 const titleHtml = cleanDoi 
@@ -500,8 +500,8 @@
 
                 const subSec = getStudySubSector(data);
                 const regionCountry = getStudyRegion(data);
-                const fuelDisplay = data.specific_fuel_name ? `${data.fuel} (${data.specific_fuel_name})` : (data.fuel || 'N/A');
-                const deviceDisplay = data.specific_device_name ? `${data.device} (${data.specific_device_name})` : (data.device || 'N/A');
+                const fuelDisplay = data.specific_fuel_name ? `${data.fuel || data.Fuel} (${data.specific_fuel_name})` : (data.fuel || data.Fuel || 'N/A');
+                const deviceDisplay = data.specific_device_name ? `${data.device || data.Device} (${data.specific_device_name})` : (data.device || data.Device || 'N/A');
 
                 row.innerHTML = `
                     <td>
@@ -644,6 +644,14 @@
             };
         }
 
+        function calculateMeanAndSD(arr) {
+            if (!arr || arr.length === 0) return null;
+            const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
+            if (arr.length === 1) return { mean, sd: 0 };
+            const variance = arr.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (arr.length - 1);
+            return { mean, sd: Math.sqrt(variance) };
+        }
+
         function onSummaryFilterChange() {
             const sector = document.getElementById("sumSector").value;
             const subSector = document.getElementById("sumSubSector").value;
@@ -760,6 +768,7 @@
 
                 const values = subset.map(d => parseNumeric(d[`ef_${speciesKey}`]));
                 const stats = calculateBoxPlotStats(values);
+                const meanSd = calculateMeanAndSD(values);
                 const boxCenterX = env.posX;
                 const boxWidth = 50;
 
@@ -774,6 +783,19 @@
                     const yMed = yScale(stats.median);
                     const yQ3 = yScale(stats.q3);
                     const yMax = yScale(stats.max);
+
+                    // Average and Standard Deviation label rendered directly above the box plot inside the canvas
+                    if (meanSd) {
+                        ctx.save();
+                        ctx.fillStyle = "#24292f";
+                        ctx.font = "bold 11px -apple-system, sans-serif";
+                        ctx.textAlign = "center";
+                        const meanStr = meanSd.mean.toFixed(meanSd.mean >= 10 ? 1 : 2);
+                        const sdStr = meanSd.sd.toFixed(meanSd.sd >= 10 ? 1 : 2);
+                        const labelYPos = Math.max(padding.top + 14, yMax - 8);
+                        ctx.fillText(`${meanStr} ± ${sdStr}`, boxCenterX, labelYPos);
+                        ctx.restore();
+                    }
 
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
