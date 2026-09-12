@@ -116,7 +116,7 @@
         .submission-links a:hover { text-decoration: underline; }
 
         /* Controls and Dropdowns */
-        .controls-bar { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+        .controls-bar { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
         .search-input, .filter-select { padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; background: white; }
         .search-input { flex: 1; min-width: 250px; }
         .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(135, 41, 23, 0.15); }
@@ -127,7 +127,7 @@
         /* Data Grid Table Elements */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+        th, td { padding: 12px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
         th { background-color: #f6f8fa; font-weight: 600; color: #57606a; white-space: nowrap; }
         tr:hover { background-color: #f8f9fa; }
         .badge { background: #dafbe1; color: #1a7f37; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
@@ -147,13 +147,20 @@
         .btn-download { display: block; width: 100%; text-align: center; background-color: #24292f; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; margin-top: 20px; text-decoration: none; box-sizing: border-box; }
         .btn-download:hover { background-color: #1f2328; }
         
-        /* 5-Species Box Plot Stack Layout */
-        .charts-stack { display: flex; flex-direction: column; gap: 25px; }
-        .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 20px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        /* 2 x 5 Grid Box Plot Layout */
+        .charts-grid-2x5 { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 20px; 
+        }
+        @media (max-width: 1050px) {
+            .charts-grid-2x5 { grid-template-columns: 1fr; }
+        }
+        .chart-card { border: 1px solid var(--border); border-radius: 8px; padding: 16px; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .chart-container { position: relative; width: 100%; height: 260px; }
-        canvas { width: 100% !important; height: 260px !important; }
-        .chart-placeholder { padding: 40px; text-align: center; color: #57606a; font-style: italic; border: 1px dashed var(--border); border-radius: 6px; background: #fafbfc; }
+        .chart-container { position: relative; width: 100%; height: 250px; }
+        canvas { width: 100% !important; height: 250px !important; }
+        .chart-placeholder { padding: 40px; text-align: center; color: #57606a; font-style: italic; border: 1px dashed var(--border); border-radius: 6px; background: #fafbfc; grid-column: 1 / -1; }
 
         /* Floating Tooltip */
         #chartTooltip {
@@ -233,6 +240,9 @@
                 <select id="sectorFilter" class="filter-select" onchange="filterTable()">
                     <option value="all">All Sectors (Dynamic)</option>
                 </select>
+                <select id="regionFilter" class="filter-select" onchange="filterTable()">
+                    <option value="all">All Regions (Dynamic)</option>
+                </select>
                 <button class="btn-action" disabled title="Full registry download temporarily disabled">📥 Download Registry (Disabled)</button>
             </div>
 
@@ -240,18 +250,24 @@
                 <table id="portalTable">
                     <thead>
                         <tr>
-                            <th style="width: 22%;">Study Metadata</th>
-                            <th style="width: 18%;">Experimental Configuration</th>
-                            <th>PM<sub>2.5</sub> EF</th>
-                            <th>BC EF</th>
-                            <th>OC EF</th>
-                            <th>CO EF</th>
-                            <th>CO<sub>2</sub> EF</th>
+                            <th style="width: 45px; text-align: center;">Sr. No.</th>
+                            <th style="width: 20%;">Study Metadata</th>
+                            <th style="width: 16%;">Experimental Configuration</th>
+                            <th>PM<sub>2.5</sub></th>
+                            <th>BC</th>
+                            <th>OC</th>
+                            <th>SO<sub>2</sub></th>
+                            <th>CO</th>
+                            <th>NMVOC</th>
+                            <th>CH<sub>4</sub></th>
+                            <th>NO<sub>x</sub></th>
+                            <th>CO<sub>2</sub></th>
+                            <th>N<sub>2</sub>O</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="7" class="loading">Loading records from core database...</td>
+                            <td colspan="13" class="loading">Loading records from core database...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -298,64 +314,129 @@
                     <div style="font-size:12px; color:#57606a; margin-top:15px; text-align:center;" id="sampleCountDisplay">Entries Matched: 0</div>
                 </div>
 
-                <div class="charts-stack" id="chartsStackContainer">
+                <div class="charts-grid-2x5" id="chartsStackContainer">
                     <div class="chart-placeholder" id="initialQueryPlaceholder">
                         📊 Please select a Sector, Sub-Sector, Fuel, or Device combination in the configuration bench to visualize the distribution box plots.
                     </div>
                     
+                    <!-- 1. PM2.5 -->
                     <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header">
-                            <strong>PM<sub>2.5</sub> Emission Factor Distribution</strong>
-                            <div style="display: flex; gap: 15px; font-size: 12px;">
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            <strong>PM<sub>2.5</sub> EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
                             </div>
                         </div>
                         <div class="chart-container"><canvas id="boxPlot-pm25"></canvas></div>
                     </div>
 
+                    <!-- 2. BC -->
                     <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header">
-                            <strong>Black Carbon (BC) Emission Factor Distribution</strong>
-                            <div style="display: flex; gap: 15px; font-size: 12px;">
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            <strong>Black Carbon (BC) EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
                             </div>
                         </div>
                         <div class="chart-container"><canvas id="boxPlot-bc"></canvas></div>
                     </div>
 
+                    <!-- 3. OC -->
                     <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header">
-                            <strong>Organic Carbon (OC) Emission Factor Distribution</strong>
-                            <div style="display: flex; gap: 15px; font-size: 12px;">
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            <strong>Organic Carbon (OC) EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
                             </div>
                         </div>
                         <div class="chart-container"><canvas id="boxPlot-oc"></canvas></div>
                     </div>
 
+                    <!-- 4. SO2 -->
                     <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header">
-                            <strong>Carbon Monoxide (CO) Emission Factor Distribution</strong>
-                            <div style="display: flex; gap: 15px; font-size: 12px;">
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            <strong>SO<sub>2</sub> EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-so2"></canvas></div>
+                    </div>
+
+                    <!-- 5. CO -->
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Carbon Monoxide (CO) EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
                             </div>
                         </div>
                         <div class="chart-container"><canvas id="boxPlot-co"></canvas></div>
                     </div>
 
+                    <!-- 6. NMVOC -->
                     <div class="chart-card calculation-graph-card" style="display:none;">
                         <div class="chart-header">
-                            <strong>Carbon Dioxide (CO<sub>2</sub>) Emission Factor Distribution</strong>
-                            <div style="display: flex; gap: 15px; font-size: 12px;">
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#f7cbe8; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
-                                <span style="display:flex; align-items:center; gap:5px;"><span style="width:12px; height:12px; background:#dcb49a; border:1.5px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            <strong>NMVOC EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-nmvoc"></canvas></div>
+                    </div>
+
+                    <!-- 7. CH4 -->
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Methane (CH<sub>4</sub>) EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-ch4"></canvas></div>
+                    </div>
+
+                    <!-- 8. NOx -->
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Nitrogen Oxides (NO<sub>x</sub>) EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-nox"></canvas></div>
+                    </div>
+
+                    <!-- 9. CO2 -->
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Carbon Dioxide (CO<sub>2</sub>) EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
                             </div>
                         </div>
                         <div class="chart-container"><canvas id="boxPlot-co2"></canvas></div>
+                    </div>
+
+                    <!-- 10. N2O -->
+                    <div class="chart-card calculation-graph-card" style="display:none;">
+                        <div class="chart-header">
+                            <strong>Nitrous Oxide (N<sub>2</sub>O) EF Distribution</strong>
+                            <div style="display: flex; gap: 12px; font-size: 11px;">
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#f7cbe8; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Lab</span>
+                                <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; background:#dcb49a; border:1px solid #000; border-radius:2px; display:inline-block;"></span> Field</span>
+                            </div>
+                        </div>
+                        <div class="chart-container"><canvas id="boxPlot-n2o"></canvas></div>
                     </div>
                 </div>
             </div>
@@ -396,6 +477,15 @@
         function getStudyRegion(item) {
             if (item.region && item.country) return `${item.region} / ${item.country}`;
             return item.region_country || item.country || item.region || 'N/A';
+        }
+
+        function getPrimaryRegion(item) {
+            if (item.region) return item.region.trim();
+            if (item.region_country) {
+                const parts = item.region_country.split('/');
+                return parts[0].trim();
+            }
+            return 'N/A';
         }
 
         function getStudySubSector(item) {
@@ -474,7 +564,7 @@
                 populateInitialDropdowns();
             } catch (err) {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="7" class="loading" style="color: red;">Error loading scientific database profiles.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" class="loading" style="color: red;">Error loading scientific database profiles.</td></tr>`;
             }
         }
 
@@ -483,11 +573,11 @@
             tbody.innerHTML = "";
 
             if (studies.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="loading">No matches found.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="13" class="loading">No matches found.</td></tr>`;
                 return;
             }
 
-            studies.forEach(data => {
+            studies.forEach((data, index) => {
                 const row = document.createElement("tr");
                 const env = data.field_or_lab || data['Field/Lab'] || "N/A";
                 row.setAttribute("data-environment", env);
@@ -504,6 +594,7 @@
                 const deviceDisplay = data.specific_device_name ? `${data.device || data.Device} (${data.specific_device_name})` : (data.device || data.Device || 'N/A');
 
                 row.innerHTML = `
+                    <td style="text-align: center; font-weight: 600; color: #57606a;">${index + 1}</td>
                     <td>
                         ${titleHtml}
                         <br>
@@ -521,8 +612,13 @@
                     <td>${formatEF(data.ef_pm25, data.un_pm25, getStudyExperiments(data, 'pm25'))}</td>
                     <td>${formatEF(data.ef_bc, data.un_bc, getStudyExperiments(data, 'bc'))}</td>
                     <td>${formatEF(data.ef_oc, data.un_oc, getStudyExperiments(data, 'oc'))}</td>
+                    <td>${formatEF(data.ef_so2, data.un_so2, getStudyExperiments(data, 'so2'))}</td>
                     <td>${formatEF(data.ef_co, data.un_co, getStudyExperiments(data, 'co'))}</td>
+                    <td>${formatEF(data.ef_nmvoc, data.un_nmvoc, getStudyExperiments(data, 'nmvoc'))}</td>
+                    <td>${formatEF(data.ef_ch4, data.un_ch4, getStudyExperiments(data, 'ch4'))}</td>
+                    <td>${formatEF(data.ef_nox, data.un_nox || data.UN_Nox, getStudyExperiments(data, 'nox'))}</td>
                     <td>${formatEF(data.ef_co2, data.un_co2, getStudyExperiments(data, 'co2'))}</td>
+                    <td>${formatEF(data.ef_n2o, data.un_n2o, getStudyExperiments(data, 'n2o'))}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -530,15 +626,25 @@
 
         function populateInitialDropdowns() {
             const sectors = new Set();
+            const regions = new Set();
+
             globalCachedStudies.forEach(item => { 
                 const sec = item.sector || item.Sector;
                 if (sec) sectors.add(sec); 
+                const reg = getPrimaryRegion(item);
+                if (reg && reg !== 'N/A') regions.add(reg);
             });
 
             const sectorFilter = document.getElementById("sectorFilter");
             sectorFilter.innerHTML = '<option value="all">All Sectors (Dynamic)</option>';
             Array.from(sectors).sort().forEach(s => {
                 sectorFilter.innerHTML += `<option value="${s}">${s}</option>`;
+            });
+
+            const regionFilter = document.getElementById("regionFilter");
+            regionFilter.innerHTML = '<option value="all">All Regions (Dynamic)</option>';
+            Array.from(regions).sort().forEach(r => {
+                regionFilter.innerHTML += `<option value="${r}">${r}</option>`;
             });
 
             const sumSector = document.getElementById("sumSector");
@@ -688,8 +794,13 @@
                 { key: 'pm25', label: 'PM2.5' },
                 { key: 'bc', label: 'BC' },
                 { key: 'oc', label: 'OC' },
+                { key: 'so2', label: 'SO2' },
                 { key: 'co', label: 'CO' },
-                { key: 'co2', label: 'CO2' }
+                { key: 'nmvoc', label: 'NMVOC' },
+                { key: 'ch4', label: 'CH4' },
+                { key: 'nox', label: 'NOx' },
+                { key: 'co2', label: 'CO2' },
+                { key: 'n2o', label: 'N2O' }
             ];
 
             speciesList.forEach(sp => {
@@ -704,16 +815,16 @@
             
             const rect = canvas.parentNode.getBoundingClientRect();
             canvas.width = rect.width * 2;
-            canvas.height = 260 * 2;
+            canvas.height = 250 * 2;
             canvas.style.width = `${rect.width}px`;
-            canvas.style.height = `260px`;
+            canvas.style.height = `250px`;
             ctx.scale(2, 2);
 
-            ctx.clearRect(0, 0, rect.width, 260);
+            ctx.clearRect(0, 0, rect.width, 250);
 
-            const padding = { top: 25, right: 30, bottom: 40, left: 65 };
+            const padding = { top: 25, right: 25, bottom: 35, left: 55 };
             const plotWidth = rect.width - padding.left - padding.right;
-            const plotHeight = 260 - padding.top - padding.bottom;
+            const plotHeight = 250 - padding.top - padding.bottom;
 
             let allValues = [];
             dataset.forEach(d => {
@@ -732,7 +843,7 @@
             ctx.strokeRect(padding.left, padding.top, plotWidth, plotHeight);
 
             ctx.fillStyle = '#000000';
-            ctx.font = '11px -apple-system, sans-serif';
+            ctx.font = '10px -apple-system, sans-serif';
             ctx.textAlign = 'right';
             const yTicks = 4;
             for (let i = 0; i <= yTicks; i++) {
@@ -740,16 +851,16 @@
                 const yPos = yScale(tickVal);
                 ctx.beginPath();
                 ctx.moveTo(padding.left, yPos);
-                ctx.lineTo(padding.left + 5, yPos);
+                ctx.lineTo(padding.left + 4, yPos);
                 ctx.stroke();
-                ctx.fillText(tickVal.toFixed(tickVal > 10 ? 0 : 1), padding.left - 8, yPos + 4);
+                ctx.fillText(tickVal.toFixed(tickVal >= 10 ? 0 : 1), padding.left - 6, yPos + 3);
             }
 
             ctx.save();
-            ctx.translate(18, padding.top + plotHeight / 2);
+            ctx.translate(14, padding.top + plotHeight / 2);
             ctx.rotate(-Math.PI / 2);
             ctx.textAlign = 'center';
-            ctx.font = 'bold 12px -apple-system, sans-serif';
+            ctx.font = 'bold 11px -apple-system, sans-serif';
             ctx.fillText(`${speciesLabel} (g/kg)`, 0, 0);
             ctx.restore();
 
@@ -770,12 +881,12 @@
                 const stats = calculateBoxPlotStats(values);
                 const meanSd = calculateMeanAndSD(values);
                 const boxCenterX = env.posX;
-                const boxWidth = 50;
+                const boxWidth = 44;
 
                 ctx.fillStyle = '#000000';
                 ctx.textAlign = 'center';
-                ctx.font = 'bold 12px -apple-system, sans-serif';
-                ctx.fillText(env.type, boxCenterX, padding.top + plotHeight + 22);
+                ctx.font = 'bold 11px -apple-system, sans-serif';
+                ctx.fillText(env.type, boxCenterX, padding.top + plotHeight + 18);
 
                 if (stats && values.length > 0) {
                     const yMin = yScale(stats.min);
@@ -784,21 +895,20 @@
                     const yQ3 = yScale(stats.q3);
                     const yMax = yScale(stats.max);
 
-                    // Average and Standard Deviation label rendered directly above the box plot inside the canvas
                     if (meanSd) {
                         ctx.save();
                         ctx.fillStyle = "#24292f";
-                        ctx.font = "bold 11px -apple-system, sans-serif";
+                        ctx.font = "bold 10px -apple-system, sans-serif";
                         ctx.textAlign = "center";
                         const meanStr = meanSd.mean.toFixed(meanSd.mean >= 10 ? 1 : 2);
                         const sdStr = meanSd.sd.toFixed(meanSd.sd >= 10 ? 1 : 2);
-                        const labelYPos = Math.max(padding.top + 14, yMax - 8);
+                        const labelYPos = Math.max(padding.top + 12, yMax - 6);
                         ctx.fillText(`${meanStr} ± ${sdStr}`, boxCenterX, labelYPos);
                         ctx.restore();
                     }
 
                     ctx.strokeStyle = '#000000';
-                    ctx.lineWidth = 2;
+                    ctx.lineWidth = 1.5;
                     ctx.beginPath();
                     ctx.moveTo(boxCenterX, yQ3);
                     ctx.lineTo(boxCenterX, yMax);
@@ -806,7 +916,7 @@
                     ctx.lineTo(boxCenterX, yMin);
                     ctx.stroke();
 
-                    const capWidth = 24;
+                    const capWidth = 20;
                     ctx.beginPath();
                     ctx.moveTo(boxCenterX - capWidth / 2, yMax);
                     ctx.lineTo(boxCenterX + capWidth / 2, yMax);
@@ -827,7 +937,7 @@
                 subset.forEach((d, pointIdx) => {
                     const v = parseNumeric(d[`ef_${speciesKey}`]);
                     const py = yScale(v);
-                    const pseudoJitter = ((pointIdx * 19) % 28) - 14;
+                    const pseudoJitter = ((pointIdx * 17) % 24) - 12;
                     const px = boxCenterX + pseudoJitter;
 
                     ctx.fillStyle = env.pointColor;
@@ -835,7 +945,7 @@
                     ctx.lineWidth = 1;
 
                     ctx.beginPath();
-                    ctx.arc(px, py, 4.5, 0, Math.PI * 2);
+                    ctx.arc(px, py, 4, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
 
@@ -858,7 +968,7 @@
 
         const tooltip = document.getElementById('chartTooltip');
 
-        ['pm25', 'bc', 'oc', 'co', 'co2'].forEach(spKey => {
+        ['pm25', 'bc', 'oc', 'so2', 'co', 'nmvoc', 'ch4', 'nox', 'co2', 'n2o'].forEach(spKey => {
             const canvasEl = document.getElementById(`boxPlot-${spKey}`);
             if (!canvasEl) return;
 
@@ -897,23 +1007,26 @@
             const searchText = document.getElementById('searchBox').value.toLowerCase();
             const selectedEnv = document.getElementById('typeFilter').value;
             const selectedSector = document.getElementById('sectorFilter').value;
+            const selectedRegion = document.getElementById('regionFilter').value;
 
             const filtered = globalCachedStudies.filter(item => {
                 const itemEnv = item.field_or_lab || item['Field/Lab'] || '';
                 const subSec = getStudySubSector(item);
-                const reg = getStudyRegion(item);
+                const regFull = getStudyRegion(item);
+                const primaryReg = getPrimaryRegion(item);
                 const sec = item.sector || item.Sector || '';
                 const title = item.study_title || item.Title || '';
                 const authors = item.authors || item.Authors || '';
                 const fuel = item.fuel || item.Fuel || '';
                 const device = item.device || item.Device || '';
                 
-                const itemText = `${title} ${authors} ${fuel} ${device} ${reg} ${sec} ${subSec}`.toLowerCase();
+                const itemText = `${title} ${authors} ${fuel} ${device} ${regFull} ${sec} ${subSec}`.toLowerCase();
                 const matchesSearch = itemText.includes(searchText);
                 const matchesEnv = (selectedEnv === 'all' || itemEnv.toLowerCase() === selectedEnv.toLowerCase());
                 const matchesSector = (selectedSector === 'all' || sec === selectedSector);
+                const matchesRegion = (selectedRegion === 'all' || primaryReg.toLowerCase() === selectedRegion.toLowerCase() || regFull.toLowerCase().includes(selectedRegion.toLowerCase()));
                 
-                return matchesSearch && matchesEnv && matchesSector;
+                return matchesSearch && matchesEnv && matchesSector && matchesRegion;
             });
             renderTableRows(filtered);
         }
@@ -922,10 +1035,11 @@
 
         function generateCSVContent(studiesArray) {
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Specific Fuel,Device,Specific Device,Region,Country,Environment,Method,PM25 EF,PM25 Uncertainty,BC EF,BC Uncertainty,OC EF,OC Uncertainty,CO EF,CO Uncertainty,CO2 EF,CO2 Uncertainty,SO2 EF,NMVOC EF,CH4 EF,NOx EF,N2O EF,Burn Rate\n";
+            csvContent += "Sr No,Study Title,Authors,Publication Year,DOI,Sector,Sub-Sector,Fuel,Specific Fuel,Device,Specific Device,Region,Country,Environment,Method,PM25 EF,PM25 Uncertainty,BC EF,BC Uncertainty,OC EF,OC Uncertainty,SO2 EF,SO2 Uncertainty,CO EF,CO Uncertainty,NMVOC EF,NMVOC Uncertainty,CH4 EF,CH4 Uncertainty,NOx EF,NOx Uncertainty,CO2 EF,CO2 Uncertainty,N2O EF,N2O Uncertainty,Burn Rate\n";
 
-            studiesArray.forEach(item => {
+            studiesArray.forEach((item, index) => {
                 const rowsArray = [
+                    `"${index + 1}"`,
                     `"${(item.study_title || item.Title || '').replace(/"/g, '""')}"`,
                     `"${(item.authors || item.Authors || '').replace(/"/g, '""')}"`,
                     `"${item.year_publication || item.year || item.Year || ''}"`,
@@ -943,13 +1057,13 @@
                     `"${parseNumeric(item.ef_pm25) || ''}"`, `"${item.un_pm25 || ''}"`,
                     `"${parseNumeric(item.ef_bc) || ''}"`, `"${item.un_bc || ''}"`,
                     `"${parseNumeric(item.ef_oc) || ''}"`, `"${item.un_oc || ''}"`,
+                    `"${parseNumeric(item.ef_so2) || ''}"`, `"${item.un_so2 || ''}"`,
                     `"${parseNumeric(item.ef_co) || ''}"`, `"${item.un_co || ''}"`,
+                    `"${parseNumeric(item.ef_nmvoc) || ''}"`, `"${item.un_nmvoc || ''}"`,
+                    `"${parseNumeric(item.ef_ch4) || ''}"`, `"${item.un_ch4 || ''}"`,
+                    `"${parseNumeric(item.ef_nox) || ''}"`, `"${item.un_nox || item.UN_Nox || ''}"`,
                     `"${parseNumeric(item.ef_co2) || ''}"`, `"${item.un_co2 || ''}"`,
-                    `"${parseNumeric(item.ef_so2) || ''}"`,
-                    `"${parseNumeric(item.ef_nmvoc) || ''}"`,
-                    `"${parseNumeric(item.ef_ch4) || ''}"`,
-                    `"${parseNumeric(item.ef_nox) || ''}"`,
-                    `"${parseNumeric(item.ef_n2o) || ''}"`,
+                    `"${parseNumeric(item.ef_n2o) || ''}"`, `"${item.un_n2o || ''}"`,
                     `"${parseNumeric(item.burn_rate) || ''}"`
                 ];
                 csvContent += rowsArray.join(",") + "\n";
